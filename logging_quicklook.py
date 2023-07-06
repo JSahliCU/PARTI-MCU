@@ -10,7 +10,7 @@ adxl34x_log_file_header = ['Timestamp', 'x', 'y', 'z']
 rm3100_log_file = 'rm3100.csv'
 rm3100_log_file_header = ["Timestamp", "x", "y", "z", "rx", "ry", "rz"]
 mcp3422_log_file = 'mcp3422.csv'
-mcp3422_log_file_header = ["Timestamp", "Channel 1", "Channel 2"]
+mcp3422_log_file_header = ["Timestamp", "Channel 1", "Channel 2", "Puck Face Temperature"]
 plot_last_n_rows = 20
 interval = 30 * 1000
 
@@ -113,17 +113,16 @@ def animate_mcp3422(i, fig_num, ax):
     ax.clear()
     ax.plot(
         mcp3422_data[mcp3422_log_file_header[0]],
-        mcp3422_data[mcp3422_log_file_header[1]],
-        label='Channel 1')
-    ax.plot(
-        mcp3422_data[mcp3422_log_file_header[0]],
-        mcp3422_data[mcp3422_log_file_header[2]],
-        label='Channel 2')
+        mcp3422_data[mcp3422_log_file_header[3]])
+    # ax.plot(
+    #     mcp3422_data[mcp3422_log_file_header[0]],
+    #     mcp3422_data[mcp3422_log_file_header[2]],
+    #     label='Channel 2')
     ax.legend()
     plt.figure(fig_num)
     plt.xticks(rotation=45, ha='right')
-    plt.title('MCP3422 - Voltage Over Time')
-    plt.ylabel('V')
+    plt.title('Puck Face Temperature')
+    plt.ylabel('Temp (deg C)')
     plt.tight_layout()
 
 # Set up plot to call animate() function periodically
