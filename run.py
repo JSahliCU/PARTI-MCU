@@ -3,6 +3,7 @@ import datetime
 import RPi.GPIO as GPIO
 import led_mappings
 import tuning_banks
+from fam_go_gpio_expander_driver import fam_go_gpio_expander
 
 heartbeat_interval = 30
 
@@ -26,15 +27,6 @@ class state_machine:
         self.boot_transceiver = self.transceiver
 
         self.record_band_and_transceiver()
-
-        # Light states
-        self.MCU_ON_state = None
-        self.HF_L1_SOLID_state = None
-        self.HF_L2_SPLIT_state = None
-        self.HF_TX_state = None
-        self.HF_RX_state = None
-        self.UHF_TX_state = None
-        self.UHF_RX_state = None
         
         # Stored timings
         self.last_sm_update_time = None
@@ -47,14 +39,17 @@ class state_machine:
         with open('tune_interval.txt', 'r') as f:
             self.hf_tune_interval = int(f.read()) 
 
+        # Initialize the fam go gpio expander
+        self.fam_go_control = fam_go_gpio_expander()
+
     def __str__(self):
         return self.band + ', ' + self.transceiver
 
     def record_band_and_transceiver(self):
-        with open('band.txt') as f:
+        with open('band.txt', 'w') as f:
             print(self.band, file=f)
 
-        with open('RX_TX.txt') as f:
+        with open('RX_TX.txt', 'w') as f:
             print(self.transceiver, file=f)
 
     def next(self):
@@ -86,21 +81,31 @@ class state_machine:
 
         # Write the gpios on the expanders for each state
         # TODO
-
+        self.fam_go_control.reset_output()
         if self.band == 'UHF':
+            self.fam_go_control.set_band_UHF()
             if self.transceiver == 'RX':
                 GPIO.output(led_mappings.led_to_bcm_mapping.UHF_RX, GPIO.HIGH)
+                self.fam_go_control.set_UHF_RX()
                 # BOOT A GNU RADIO INSTANCE TODO
             else # self.transceiver == 'TX'
-                GPIO.output(led_mappings.led_to_bcm_mapping.UHF_TX, GPIO.HIGH)
+                GPIO.output(led_mappings.led_to_bcm_mapping.UHF_TX, GPIO.HIGH)          
+                self.fam_go_control.set_UHF_TX()
                 # BOOT A GNU RADIO INSTANCE TODO
+                time.sleep(5) # Wait a nominal 5 seconds before turning on the amplifier
+                self.fam_go_control.set_UHF_pwr_amp()
         else #self.band == 'HF':
+            self.fam_go_control.set_band_HF()
             if self.transceiver == 'RX':
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_RX, GPIO.HIGH)
+                self.fam_go_control.set_HF_RX()
                 # BOOT A GNU RADIO INSTANCE TODO
             else # self.transceiver == 'TX'
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_TX, GPIO.HIGH)
+                self.fam_go_control.set_HF_TX()
                 # BOOT A GNU RADIO INSTANCE TODO
+                time.sleep(5) # Wait a nominal 5 seconds before turning on the amplifier
+                self.fam_go_control.set_HF_pwr_amp()
 
 def write_to_log(log_msg):
     with open(error_log_file, 'a') as f:
@@ -140,7 +145,8 @@ def main():
     sm.mcu_light_state = False
 
     # Initially tune the HF state
-    tuning_banks.tune_HF()
+    tuner = tuning_banks.tuner()
+    tuner.tune()
     starttime = time.time()
     sm.last_HF_tune_time = starttime
 
@@ -155,7 +161,7 @@ def main():
     # Main loop
     while True:
         starttime = time.time()
-        with open('heartbeat.txt') as f:
+        with open('heartbeat.txt', 'w') as f:
             print(str(datetime.datetime.now()), file=f)
 
         # Blink the MCU light
@@ -175,7 +181,7 @@ def main():
 
         # Tune the receiver if necessary
         if sm.band == 'HF' and (time.time() - sm.last_HF_tune_time) > sm.sm_update_interval:
-            tuning_banks.tune_HF()
+            tuner.tune()
             sm.last_HF_tune_time = time.time()
 
         # Log machine state
