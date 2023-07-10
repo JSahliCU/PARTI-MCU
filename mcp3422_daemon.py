@@ -2,7 +2,7 @@ from ADCPi import ADCPi
 import datetime
 import math
 
-adc = ADCPi(0x68, 0x68, 18)
+adc = ADCPi(0x68, 0x68, 18, 0)
 
 log_file = 'mcp3422.csv'
 
