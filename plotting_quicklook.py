@@ -39,6 +39,10 @@ fig_num_temp_sensors = 6
 fig_temp_sensors = plt.figure(fig_num_temp_sensors)
 ax_temp_sensors = fig_temp_sensors.add_subplot(1, 1, 1)
 
+# Create logs of split_tune, solid_tune, band, TX_RX, heartbeat, boot, transceiver_state_interval
+# Display tuning_log_file.txt
+# Display error.log
+
 # This function is called periodically from FuncAnimation
 def animate_bme280(i, fig_num, ax, header):
 
