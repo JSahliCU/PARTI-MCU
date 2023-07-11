@@ -4,6 +4,7 @@ import RPi.GPIO as GPIO
 import led_mappings
 import tuning_banks
 from fam_go_gpio_expander_driver import fam_go_gpio_expander
+import os
 
 heartbeat_interval = 30
 
@@ -137,6 +138,12 @@ def throw_error(log_msg):
 def main():
     # Init
     write_to_log('Initializing')
+
+    # Store the PID for the hearbeat detector cronjob, and store an initial heartbeat
+    with open('run_pid.txt', 'w') as f:
+        print(os.getpid(), file=f)
+    with open('heartbeat.txt', 'w') as f:
+        print(str(datetime.datetime.now()), file=f)
 
     # Initialize the state object
     sm = state_machine()
