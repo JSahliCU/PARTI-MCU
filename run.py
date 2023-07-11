@@ -72,13 +72,13 @@ class state_machine:
     def toggle_transceiver(self):
         if self.transceiver == 'RX':
             self.transceiver = 'TX'
-        else # self.transeiver == 'TX':
+        else: # self.transeiver == 'TX':
             self.transceiver = 'RX'
 
     def toggle_band(self):
         if self.band == 'UHF':
             self.band = 'HF'
-        else # self.band == 'HF':
+        else: # self.band == 'HF':
             self.band = 'UHF'
 
     def run_current_state(self):
@@ -103,13 +103,13 @@ class state_machine:
                 GPIO.output(led_mappings.led_to_bcm_mapping.UHF_RX, GPIO.HIGH)
                 self.fam_go_control.set_UHF_RX()
                 self.process = subprocess.Popen('exec python UHF_RX.py', shell=True)
-            else # self.transceiver == 'TX'
+            else: # self.transceiver == 'TX'
                 GPIO.output(led_mappings.led_to_bcm_mapping.UHF_TX, GPIO.HIGH)          
                 self.fam_go_control.set_UHF_TX()
                 self.process = subprocess.Popen('exec python UHF_TX.py', shell=True)
                 time.sleep(amp_turn_on_wait) 
                 self.fam_go_control.set_UHF_pwr_amp()
-        else #self.band == 'HF':
+        else: #self.band == 'HF':
             self.fam_go_control.set_band_HF()
             self.fam_go_control.set_HF_TX()
             self.process = subprocess.Popen('exec python HF_tune.py', shell=True)
@@ -122,7 +122,7 @@ class state_machine:
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_RX, GPIO.HIGH)
                 self.fam_go_control.set_HF_RX()
                 self.process = subprocess.Popen('exec python HF_RX.py', shell=True)
-            else # self.transceiver == 'TX'
+            else: # self.transceiver == 'TX'
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_TX, GPIO.HIGH)
                 self.fam_go_control.set_HF_TX()
                 self.process = subprocess.Popen('exec python HF_TX.py', shell=True)
