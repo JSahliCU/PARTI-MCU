@@ -99,6 +99,7 @@ class state_machine:
                 self.fam_go_control.set_UHF_pwr_amp()
         else #self.band == 'HF':
             self.fam_go_control.set_band_HF()
+            self.fam_go_control.set_HF_TX()
             # BOOT GNU RADIO INSTANCE TODO that ouputs tone
             time.sleep(amp_turn_on_wait)
             self.fam_go_control.set_HF_tune_amp()
