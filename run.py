@@ -35,7 +35,7 @@ class state_machine:
 
         # Stored intervals
         with open('transceiver_state_interval.txt', 'r') as f:
-            self.sm_update_interval = int(f.read()) 
+            self.sm_update_interval = int(f.read()) * 60 # convert from minutes to seconds
 
         # Initialize the fam go gpio expander
         self.fam_go_control = fam_go_gpio_expander()
@@ -178,7 +178,7 @@ def main():
             mcu_light_state = True
         
         # Update the SM state
-        if (time.time() - sm.last_sm_update_time) > sm.hf_tune_interval:
+        if (time.time() - sm.last_sm_update_time) > sm.sm_update_interval:
             sm.next()
             sm.run_current_state()
             sm.last_sm_update_time = time.time()
