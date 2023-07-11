@@ -1,17 +1,21 @@
 import time
 import datetime
+import os
+import subprocess
+import signal
+
 import RPi.GPIO as GPIO
 import led_mappings
 import tuning_banks
 from fam_go_gpio_expander_driver import fam_go_gpio_expander
-import os
 
-heartbeat_interval = 30
+heartbeat_interval = 30 # seconds
 
 error_log_file = 'error.log'
-error_blink_interval = 1
+error_blink_interval = 1 # seconds
 
-amp_turn_on_wait = 5
+amp_turn_on_wait = 5 # seconds
+wait_for_gnu_radio_to_close = 2 # seconds
 
 class state_machine:
     def __init__(self):
@@ -43,6 +47,9 @@ class state_machine:
 
         # Initialize the tuner control
         self.tuner = tuning_banks.tuner()
+
+        # Initialize the gnuradio-companion &
+        self.process = None
 
     def __str__(self):
         return self.band + ', ' + self.transceiver
@@ -82,6 +89,10 @@ class state_machine:
         GPIO.output(led_mappings.led_to_bcm_mapping.HF_TX, GPIO.LOW)
 
         # Kill the currently running GNU instance
+        if self.process is not None:
+            if self.process.poll() is None:
+                self.process.signal(signal.SIGINT)
+                time.sleep(wait_for_gnu_radio_to_close)
 
         # Write the gpios on the expanders for each state
         # TODO
@@ -91,17 +102,17 @@ class state_machine:
             if self.transceiver == 'RX':
                 GPIO.output(led_mappings.led_to_bcm_mapping.UHF_RX, GPIO.HIGH)
                 self.fam_go_control.set_UHF_RX()
-                # BOOT A GNU RADIO INSTANCE TODO
+                self.process = subprocess.Popen('exec python UHF_RX.py', shell=True)
             else # self.transceiver == 'TX'
                 GPIO.output(led_mappings.led_to_bcm_mapping.UHF_TX, GPIO.HIGH)          
                 self.fam_go_control.set_UHF_TX()
-                # BOOT A GNU RADIO INSTANCE TODO
-                time.sleep(amp_turn_on_wait) # Wait a nominal 5 seconds before turning on the amplifier
+                self.process = subprocess.Popen('exec python UHF_TX.py', shell=True)
+                time.sleep(amp_turn_on_wait) 
                 self.fam_go_control.set_UHF_pwr_amp()
         else #self.band == 'HF':
             self.fam_go_control.set_band_HF()
             self.fam_go_control.set_HF_TX()
-            # BOOT GNU RADIO INSTANCE TODO that ouputs tone
+            self.process = subprocess.Popen('exec python HF_tune.py', shell=True)
             time.sleep(amp_turn_on_wait)
             self.fam_go_control.set_HF_tune_amp()
             self.tuner.tune()
@@ -110,12 +121,12 @@ class state_machine:
             if self.transceiver == 'RX':
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_RX, GPIO.HIGH)
                 self.fam_go_control.set_HF_RX()
-                # BOOT A GNU RADIO INSTANCE TODO
+                self.process = subprocess.Popen('exec python HF_RX.py', shell=True)
             else # self.transceiver == 'TX'
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_TX, GPIO.HIGH)
                 self.fam_go_control.set_HF_TX()
-                # BOOT A GNU RADIO INSTANCE TODO
-                time.sleep(amp_turn_on_wait) # Wait a nominal 5 seconds before turning on the amplifier
+                self.process = subprocess.Popen('exec python HF_TX.py', shell=True)
+                time.sleep(amp_turn_on_wait) 
                 self.fam_go_control.set_HF_pwr_amp()
 
 def write_to_log(log_msg):
