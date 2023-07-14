@@ -62,6 +62,11 @@ class state_machine:
             print(self.transceiver, file=f)
 
     def next(self):
+        # If the current mode is RX, then rename the rx_data 
+        # file with the current band, and timestamp information
+
+        os.rename('rx_data_' + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S'))
+
         if self.transceiver != self.boot_transceiver:
             self.toggle_band()
 
