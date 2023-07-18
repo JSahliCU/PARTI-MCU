@@ -38,6 +38,11 @@ class state_machine:
         # Stored timings
         self.last_sm_update_time = None
 
+        with open('total_runtime.txt') as f:
+            self.total_runtime = int(f.read()) * 60 * 60 # convert from hours to seconds
+        
+        self.init_time = time.time()
+
         # Stored intervals
         with open('transceiver_state_interval.txt', 'r') as f:
             self.sm_update_interval = int(f.read()) * 60 # convert from minutes to seconds
@@ -99,9 +104,16 @@ class state_machine:
                 self.process.signal(signal.SIGINT)
                 time.sleep(wait_for_gnu_radio_to_close)
 
-        # Write the gpios on the expanders for each state
+        # Write the GPIOs on the expanders for each state
         # TODO
         self.fam_go_control.reset_output()
+
+        # Shutdown the system if total runtime is up, and the time
+        if (time.time() - self.init_time) > self.total_runtime:
+            write_to_log('Shutting Down')
+            subprocess.call("sudo shutdown -h now", shell=True)
+
+        # Boot into the UHF, HF, TX, RX mode that makes the most sense
         if self.band == 'UHF':
             self.fam_go_control.set_band_UHF()
             if self.transceiver == 'RX':
@@ -189,6 +201,7 @@ def main():
     # Main loop
     while True:
         starttime = time.time()
+
         # Store the heartbeat file
         with open('heartbeat.txt', 'w') as f:
             print(str(datetime.datetime.now()), file=f)
