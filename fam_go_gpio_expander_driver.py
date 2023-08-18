@@ -12,8 +12,14 @@ class fam_go_gpio_expander:
 
     def reset_output(self):
         # This does in fact map to everything off
-        self.pcf.port = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
-        self.port_states =  [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+        self.pcf.port = [False, False, False, False, 
+                         False, False, False, False, 
+                         False, False, False, False, 
+                         False, False, False, False]
+        self.port_states =  [False, False, False, False, 
+                             False, False, False, False, 
+                             False, False, False, False, 
+                             False, False, False, False]
 
     def sync_port_states(self):
         self.pcf.port = self.port_states
@@ -26,7 +32,7 @@ class fam_go_gpio_expander:
         self._set_UHF_pwr_amp_control(False)
 
     def _set_UHF_pwr_amp_control(self, on):
-        self.port_states[10] = on
+        self.port_states[8] = on
         self.sync_port_states()
 
 
@@ -40,7 +46,7 @@ class fam_go_gpio_expander:
     def _set_UHF_TX_control(self, tx):
         """True is transmit, and false is receive
         """
-        self.port_states[11] = tx
+        self.port_states[9] = tx
         self.sync_port_states()
     
     # BAND SW control
@@ -53,7 +59,7 @@ class fam_go_gpio_expander:
     def _set_band_sw_control(self, uhf):
         """True sets to UHF, and False set to HF
         """
-        self.port_states[12] = uhf
+        self.port_states[10] = uhf
         self.sync_port_states()
 
     # HF Power amp control

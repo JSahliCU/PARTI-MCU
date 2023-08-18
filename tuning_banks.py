@@ -18,8 +18,14 @@ def convert_int_to_bool_array(n, format_string='07b'):
 
 class tuning_bank:
     def reset_output(self):
-        self.pcf.port = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
-        self.port_states =  [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
+        self.pcf.port = [False, False, False, False, 
+                         False, False, False, False, 
+                         False, False, False, False, 
+                         False, False, False, False,]
+        self.port_states =  [False, False, False, False, 
+                             False, False, False, False, 
+                             False, False, False, False, 
+                             False, False, False, False, ]
 
     def sync_port_states(self):
         self.pcf.port = self.port_states
@@ -101,10 +107,14 @@ class tuning_bank_solid(tuning_bank):
             tuning_bank.relay(2, 3, 39),
             tuning_bank.relay(4, 5, 20),
             tuning_bank.relay(6, 7, 10),
-            tuning_bank.relay(10, 11, 5),
-            tuning_bank.relay(12, 13, 2),
+            # tuning_bank.relay(10, 11, 5),
+            # tuning_bank.relay(12, 13, 2),
+            # tuning_bank.relay(14, 15, 1),
+            # tuning_bank.relay(16, 17, 1),
+            tuning_bank.relay(8, 9, 5),
+            tuning_bank.relay(10, 11, 2),
+            tuning_bank.relay(12, 13, 1),
             tuning_bank.relay(14, 15, 1),
-            tuning_bank.relay(16, 17, 1),
         ]
         self.relays.sort(key=lambda x: x.cap_value, reverse=True)
         
@@ -125,10 +135,14 @@ class tuning_bank_split(tuning_bank):
             tuning_bank.relay(2, 3, 1),
             tuning_bank.relay(4, 5, 1),
             tuning_bank.relay(6, 7, 2),
-            tuning_bank.relay(10, 11, 5),
-            tuning_bank.relay(12, 13, 10),
-            tuning_bank.relay(14, 15, 20),
-            tuning_bank.relay(16, 17, 39),
+            # tuning_bank.relay(10, 11, 5),
+            # tuning_bank.relay(12, 13, 10),
+            # tuning_bank.relay(14, 15, 20),
+            # tuning_bank.relay(16, 17, 39),
+            tuning_bank.relay(8, 9, 5),
+            tuning_bank.relay(10, 11, 10),
+            tuning_bank.relay(12, 13, 20),
+            tuning_bank.relay(14, 15, 39),
         ]
         self.relays.sort(key=lambda x: x.cap_value, reverse=True)
         
