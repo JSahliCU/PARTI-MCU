@@ -189,6 +189,17 @@ def main():
     # Initialize the heartbeat light
     mcu_light_state = False
 
+    # Turn on all the supplies, just in case they are off
+    # UHF Supply
+    GPIO.setup(4, GPIO.OUT)
+    GPIO.output(4, GPIO.LOW)
+
+    # HF Supply (Disconnected by default)
+    GPIO.setup(20, GPIO.OUT)
+    GPIO.output(20, GPIO.LOW)
+
+    # No need to set the 5.1 V enable, because HiZ is on, and the default state of the GPIO pin is HiZ
+
     # Start the initial state
     starttime = time.time()
     sm.run_current_state()  
