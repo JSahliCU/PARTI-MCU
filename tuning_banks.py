@@ -18,14 +18,11 @@ def convert_int_to_bool_array(n, format_string='07b'):
 
 class tuning_bank:
     def reset_output(self):
-        self.pcf.port = [False, False, False, False, 
-                         False, False, False, False, 
-                         False, False, False, False, 
-                         False, False, False, False,]
-        self.port_states =  [False, False, False, False, 
-                             False, False, False, False, 
-                             False, False, False, False, 
-                             False, False, False, False, ]
+        self.port_states =  [True, True, True, True, 
+                             True, True, True, True, 
+                             True, True, True, True, 
+                             True, True, True, True, ]
+        self.sync_port_states()
 
     def sync_port_states(self):
         self.pcf.port = self.port_states
@@ -35,7 +32,7 @@ class tuning_bank:
 
     def reset_capacitance(self):
         for i, r in enumerate(self.relays):
-            self.port_states[r.reset_pin] = True
+            self.port_states[r.reset_pin] = False
         
         self.sync_port_states()
         self.wait_for_coil_to_set()
@@ -65,9 +62,11 @@ class tuning_bank:
         for i, r in enumerate(self.relays):
             cap_value = r.cap_value
             if cap_pF >= cap_value:
-                future_bank_state_ba[i] = True
+                future_bank_state_ba[i] = False
                 #self.port_states[self.set_caps[cap_value]] = True
                 cap_pF -= cap_value
+            else:
+                future_bank_state_ba[i] = True
         
         # Figure out how to change the bank from the current value 
         # to that future value with the minimum number of relay changes
