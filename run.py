@@ -236,4 +236,8 @@ def main():
         time.sleep(heartbeat_interval - ((time.time() - starttime) % heartbeat_interval))
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as inst:
+        # Displays any exceptions, and logs them into error log
+        throw_error(inst.__str__())
