@@ -5,7 +5,7 @@ class fam_go_gpio_expander:
     def __init__(self):
         # Setup the address of the GPIO expander
         self.pcf = PCF8575(
-            1, 
+            0, 
             0x22)
 
         # Reset the output, so that its a known state

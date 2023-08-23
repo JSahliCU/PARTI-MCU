@@ -97,7 +97,7 @@ class tuning_bank_solid(tuning_bank):
     def __init__(self):
         # Setup the address of the GPIO expander
         self.pcf = PCF8575(
-            1, # TODO Need to test
+            0,
             0x20) # U3
 
         # Reset the output, so that its a known state
@@ -125,7 +125,7 @@ class tuning_bank_split(tuning_bank):
     def __init__(self):
         # Setup the address of the GPIO expander
         self.pcf = PCF8575(
-            1, # TODO Need to test
+            0,
             0x27) # U4
 
         # Reset the output, so that its a known state
