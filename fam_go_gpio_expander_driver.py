@@ -1,4 +1,5 @@
 from pcf8575 import PCF8575
+import time
 
 class fam_go_gpio_expander:
     def __init__(self):
@@ -12,17 +13,15 @@ class fam_go_gpio_expander:
 
     def reset_output(self):
         # This does in fact map to everything off
-        self.pcf.port = [False, False, False, False, 
-                         False, False, False, False, 
-                         False, False, False, False, 
-                         False, False, False, False]
         self.port_states =  [False, False, False, False, 
                              False, False, False, False, 
                              False, False, False, False, 
                              False, False, False, False]
+        self.sync_port_states()
 
     def sync_port_states(self):
         self.pcf.port = self.port_states
+        time.sleep(0.1)
 
     # UHF Power amp controls
     def set_UHF_pwr_amp(self):
