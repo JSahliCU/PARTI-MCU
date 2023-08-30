@@ -5,12 +5,12 @@ def enum(*sequential, **named):
     return type('Enum', (), enums)
 
 led_index_to_bcm_mapping ={
-     1: 17,
-     2: 27,
+     1: 6,
+     2: 13,
      3: 22,
      4: 5,
-     5: 6,
-     6: 13,
+     5: 17,
+     6: 27,
      7: 19
      }
 
