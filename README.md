@@ -2,4 +2,4 @@ These programs were designed for the PARTI pucks project. This git repository is
 
 1. pip install -r requirements.txt
 1. run the install.sh file from the root directory of the project
-1. Use logging_quicklook.py to monitor the last 20 minutes of samples
+1. Use quicklook.sh to monitor the last 20 minutes of samples
