@@ -78,7 +78,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     log_file = 'gain_log.csv'
 
     def __init__(self, 
-                 goal_input_level=1.0, hysteresis=0.1, update_period=0.1, auto_log_time_min=15,
+                 goal_input_level=1.0, hysteresis=1.5, update_period=0.5, auto_log_time_min=15,
                  callback_rf_gain=None, callback_if_gain=None, callback_bb_gain=None):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
         gr.sync_block.__init__(

@@ -140,7 +140,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self._if_gain_display_label = Qt.QLabel(str(self._if_gain_display_formatter(self.if_gain_display)))
         self._if_gain_display_tool_bar.addWidget(self._if_gain_display_label)
         self.top_grid_layout.addWidget(self._if_gain_display_tool_bar)
-        self.epy_block_0 = epy_block_0.blk(goal_input_level=1.0, hysteresis=1.2, update_period=0.1, auto_log_time_min=15, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain)
+        self.epy_block_0 = epy_block_0.blk(goal_input_level=1.0, hysteresis=1.5, update_period=0.5, auto_log_time_min=15, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain)
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_ff(
             digital.TED_SIGNAL_TIMES_SLOPE_ML,
             samp_per_symbol,
