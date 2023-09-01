@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cp ./* ../
-# crontab < ./tbbg
+crontab < ./tbbg
