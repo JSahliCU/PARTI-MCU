@@ -8,9 +8,9 @@ for tb, tb_name in [(tb_split, 'split'), (tb_solid, 'solid')]:
         tb.port_states[relay.set_pin] = False
         tb.sync_port_states()
         tb.port_states[relay.set_pin] = True
-        input(tb_name + ' set ' str(i) + '    ' + str(relay.cap_value) + 'pF')
+        input(tb_name + ' set ' + str(i) + '    ' + str(relay.cap_value) + 'pF')
 
         tb.port_states[relay.reset_pin] = False
         tb.sync_port_states()
         tb.port_states[relay.reset_pin] = True
-        input(tb_name + 'reset ' str(i) + '    ' + str(relay.cap_value) + 'pF')
+        input(tb_name + 'reset ' + str(i) + '    ' + str(relay.cap_value) + 'pF')
