@@ -239,5 +239,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as inst:
-        # Displays any exceptions, and logs them into error log
+        # Displays any exceptions, logs them into error log and blink front panel lights
         throw_error(inst.__str__())

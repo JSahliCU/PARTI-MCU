@@ -25,7 +25,7 @@ class tuning_bank:
         self.sync_port_states()
 
     def sync_port_states(self):
-        self.pcf.port = self.port_states
+        self.pcf.port = list(reversed(self.port_states))
         time.sleep(0.1)
 
     def wait_for_coil_to_set(self):
