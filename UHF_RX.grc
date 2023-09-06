@@ -628,16 +628,16 @@ blocks:
       \    50),\n         (11,    40,    52),\n         (11,    40,    54),\n    \
       \     (11,    40,    56),\n         (11,    40,    58),\n         (11,    40,\
       \    60),\n         (11,    40,    62),\n    )\n\n    log_file = 'gain_log.csv'\n\
-      \n    def __init__(self, \n                 goal_input_level=1.0, hysteresis=0.1,\
-      \ update_period=0.1, auto_log_time_min=15,\n                 callback_rf_gain=None,\
+      \n    def __init__(self, \n                 max_input_level=0.9, min_input_level=0.1,\
+      \ update_period=0.5, auto_log_time_min=15,\n                 callback_rf_gain=None,\
       \ callback_if_gain=None, callback_bb_gain=None):  # only default arguments here\n\
       \        \"\"\"arguments to this function show up as parameters in GRC\"\"\"\
       \n        gr.sync_block.__init__(\n            self,\n            name='Embedded\
       \ Python Block',   # will show up in GRC\n            in_sig=[np.float32],\n\
       \            out_sig=[]\n        )\n        # if an attribute with the same\
       \ name as a parameter is found,\n        # a callback is registered (properties\
-      \ work, too).\n        self.goal_input_level = goal_input_level\n        self.hysteresis\
-      \ = hysteresis\n        self.update_period = update_period\n        self.callback_rf_gain\
+      \ work, too).\n        self.max_input_level = max_input_level\n        self.min_input_level\
+      \ = min_input_level\n        self.update_period = update_period\n        self.callback_rf_gain\
       \ = callback_rf_gain\n        self.callback_if_gain = callback_if_gain\n   \
       \     self.callback_bb_gain = callback_bb_gain\n\n        self.gain_table_index\
       \ = 8\n        self.log_index = 0\n        self.auto_log_time_min = auto_log_time_min\n\
@@ -651,20 +651,19 @@ blocks:
       \                    map(str, \n                        [input_items[-1][-1],\
       \ rf_gain, if_gain, bb_gain]\n                    )\n                )\n   \
       \             print(str(datetime.datetime.now()) + \"UTC \" + log_msg, file=f)\n\
-      \n        if input_items[-1][-1] > (self.goal_input_level + self.hysteresis/2):\n\
-      \            log()\n            self.decrease_gain()\n\n        if input_items[-1][-1]\
-      \ < (self.goal_input_level - self.hysteresis/2):\n            log()\n      \
-      \      self.increase_gain() \n        \n        if self.log_index >= self.log_index_limit:\n\
-      \            log()\n        else:\n            self.log_index += 1\n       \
-      \ #output_items[0][:] = input_items[0] * self.example_param\n        \n    \
-      \    time.sleep(self.update_period)\n        return 0 #len(output_items[0])\n\
-      \n    def check_gain_table_index_limits(self):\n        if self.gain_table_index\
-      \ < 0:\n            self.gain_table_index = 0\n        \n        if self.gain_table_index\
-      \ >= len(blk.gain_table):\n            self.gain_table_index = len(blk.gain_table)\
-      \ - 1\n\n    def set_gain_from_gain_table(self):\n        gain_table_tuple =\
-      \ blk.gain_table[self.gain_table_index]\n        rf_gain = gain_table_tuple[0]\n\
-      \        if_gain = gain_table_tuple[1]\n        bb_gain = gain_table_tuple[2]\n\
-      \n        self.callback_rf_gain(rf_gain)\n        self.callback_if_gain(if_gain)\n\
+      \n        if input_items[-1][-1] > (self.max_input_level):\n            log()\n\
+      \            self.decrease_gain()\n\n        if input_items[-1][-1] < (self.min_input_level):\n\
+      \            log()\n            self.increase_gain() \n        \n        if\
+      \ self.log_index >= self.log_index_limit:\n            log()\n        else:\n\
+      \            self.log_index += 1\n        #output_items[0][:] = input_items[0]\
+      \ * self.example_param\n        \n        time.sleep(self.update_period)\n \
+      \       return 0 #len(output_items[0])\n\n    def check_gain_table_index_limits(self):\n\
+      \        if self.gain_table_index < 0:\n            self.gain_table_index =\
+      \ 0\n        \n        if self.gain_table_index >= len(blk.gain_table):\n  \
+      \          self.gain_table_index = len(blk.gain_table) - 1\n\n    def set_gain_from_gain_table(self):\n\
+      \        gain_table_tuple = blk.gain_table[self.gain_table_index]\n        rf_gain\
+      \ = gain_table_tuple[0]\n        if_gain = gain_table_tuple[1]\n        bb_gain\
+      \ = gain_table_tuple[2]\n\n        self.callback_rf_gain(rf_gain)\n        self.callback_if_gain(if_gain)\n\
       \        self.callback_bb_gain(bb_gain)\n\n    def decrease_gain(self):\n  \
       \      self.gain_table_index -= 1\n        self.check_gain_table_index_limits()\n\
       \        self.set_gain_from_gain_table()\n\n    def increase_gain(self):\n \
@@ -677,22 +676,22 @@ blocks:
     callback_if_gain: self.set_if_gain
     callback_rf_gain: self.set_rf_gain
     comment: ''
-    goal_input_level: '1.0'
-    hysteresis: '1.5'
+    max_input_level: '0.9'
     maxoutbuf: '0'
+    min_input_level: '0.1'
     minoutbuf: '0'
     update_period: '0.5'
   states:
-    _io_cache: ('Embedded Python Block', 'blk', [('goal_input_level', '1.0'), ('hysteresis',
-      '0.1'), ('update_period', '0.1'), ('auto_log_time_min', '15'), ('callback_rf_gain',
+    _io_cache: ('Embedded Python Block', 'blk', [('max_input_level', '0.9'), ('min_input_level',
+      '0.1'), ('update_period', '0.5'), ('auto_log_time_min', '15'), ('callback_rf_gain',
       'None'), ('callback_if_gain', 'None'), ('callback_bb_gain', 'None')], [('0',
       'float', 1)], [], 'arguments to this function show up as parameters in GRC',
       ['auto_log_time_min', 'callback_bb_gain', 'callback_if_gain', 'callback_rf_gain',
-      'goal_input_level', 'hysteresis', 'update_period'])
+      'max_input_level', 'min_input_level', 'update_period'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 517]
+    coordinate: [898, 537]
     rotation: 0
     state: true
 - name: osmosdr_source_0
