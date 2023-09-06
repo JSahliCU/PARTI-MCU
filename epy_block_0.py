@@ -78,7 +78,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     log_file = 'gain_log.csv'
 
     def __init__(self, 
-                 goal_input_level=1.0, hysteresis=1.5, update_period=0.5, auto_log_time_min=15,
+                 max_input_level=0.9, min_input_level=0.1, update_period=0.5, auto_log_time_min=15,
                  callback_rf_gain=None, callback_if_gain=None, callback_bb_gain=None):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
         gr.sync_block.__init__(
@@ -89,8 +89,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         )
         # if an attribute with the same name as a parameter is found,
         # a callback is registered (properties work, too).
-        self.goal_input_level = goal_input_level
-        self.hysteresis = hysteresis
+        self.max_input_level = max_input_level
+        self.min_input_level = min_input_level
         self.update_period = update_period
         self.callback_rf_gain = callback_rf_gain
         self.callback_if_gain = callback_if_gain
@@ -121,11 +121,11 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
                 )
                 print(str(datetime.datetime.now()) + "UTC " + log_msg, file=f)
 
-        if input_items[-1][-1] > (self.goal_input_level + self.hysteresis/2):
+        if input_items[-1][-1] > (self.max_input_level):
             log()
             self.decrease_gain()
 
-        if input_items[-1][-1] < (self.goal_input_level - self.hysteresis/2):
+        if input_items[-1][-1] < (self.min_input_level):
             log()
             self.increase_gain() 
         

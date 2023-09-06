@@ -216,7 +216,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: (int) (2e7)
+    value: (int) (2e6)
   states:
     bus_sink: false
     bus_source: false
@@ -249,7 +249,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: ./tx_data
+    file: /home/tbbg/tx_data
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -263,7 +263,7 @@ blocks:
     bus_structure: null
     coordinate: [29, 188]
     rotation: 0
-    state: true
+    state: enabled
 - name: blocks_packed_to_unpacked_xx_0
   id: blocks_packed_to_unpacked_xx
   parameters:
@@ -282,7 +282,7 @@ blocks:
     bus_structure: null
     coordinate: [344, 227]
     rotation: 0
-    state: true
+    state: enabled
 - name: blocks_repeat_0_0
   id: blocks_repeat
   parameters:
@@ -334,6 +334,26 @@ blocks:
     coordinate: [455, 392]
     rotation: 0
     state: enabled
+- name: blocks_vector_source_x_0
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    repeat: 'True'
+    tags: '[]'
+    type: byte
+    vector: (0, 1)
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [48, 100.0]
+    rotation: 0
+    state: disabled
 - name: osmosdr_sink_0
   id: osmosdr_sink
   parameters:
@@ -629,6 +649,7 @@ connections:
 - [blocks_repeat_0_0, '0', blocks_uchar_to_float_1, '0']
 - [blocks_uchar_to_float_1, '0', virtual_sink_0, '0']
 - [blocks_vco_c_0_0, '0', osmosdr_sink_0, '0']
+- [blocks_vector_source_x_0, '0', blocks_repeat_0_0, '0']
 - [virtual_source_0, '0', blocks_add_const_vxx_0_0, '0']
 
 metadata:
