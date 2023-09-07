@@ -96,7 +96,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 3 * bps
+    value: 1.1 * bps
   states:
     bus_sink: false
     bus_source: false

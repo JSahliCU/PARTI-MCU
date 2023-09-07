@@ -76,7 +76,7 @@ class HF_TX(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate = (int) (2e6)
         self.packet_bits = packet_bits = 108
         self.header_bits = header_bits = 8
-        self.delta_f = delta_f = 3 * bps
+        self.delta_f = delta_f = 1.1 * bps
         self.baud_rate = baud_rate = bps * 2 / M
         self.samp_per_symbol = samp_per_symbol = (int)(samp_rate * (1 / baud_rate))
         self.samp_per_bit = samp_per_bit = (int)(samp_rate * (1 / bps))
@@ -132,7 +132,7 @@ class HF_TX(gr.top_block, Qt.QWidget):
     def set_bps(self, bps):
         self.bps = bps
         self.set_baud_rate(self.bps * 2 / self.M)
-        self.set_delta_f(3 * self.bps)
+        self.set_delta_f(1.1 * self.bps)
         self.set_samp_per_bit((int)(self.samp_rate * (1 / self.bps)))
 
     def get_M(self):
