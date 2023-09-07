@@ -280,7 +280,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
         	channel_rate=samp_rate,
         	audio_decim=1,
         	deviation=(delta_f),
-        	audio_pass=delta_f * 5,
+        	audio_pass=delta_f * 3,
         	audio_stop=delta_f * 7,
         	gain=1.0,
         	tau=0,
