@@ -113,6 +113,16 @@ class state_machine:
             write_to_log('Shutting Down')
             subprocess.call("sudo shutdown -h now", shell=True)
 
+        # Can help to power cycle the Hack RF before using it so it comes up in a clean state
+        # Add this to the install.sh script: 
+        # sudo apt-get install uhubctl
+        # Then turn off, wait 5 seconds, then turn on
+        # subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/unbind", shell=True)
+        # time.sleep(5)
+        # subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/bind", shell=True)
+        # time.sleep(0.5)
+
+
         # Boot into the UHF, HF, TX, RX mode that makes the most sense
         if self.band == 'UHF':
             self.fam_go_control.set_band_UHF()
