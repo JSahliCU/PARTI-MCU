@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: UHF TX
 # Author: Jake Sahli
-# GNU Radio version: 3.8.1.0
+# GNU Radio version: 3.8.2.0
 
 from distutils.version import StrictVersion
 
@@ -33,6 +33,7 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 import osmosdr
 import time
+
 from gnuradio import qtgui
 
 class UHF_TX(gr.top_block, Qt.QWidget):
@@ -73,7 +74,7 @@ class UHF_TX(gr.top_block, Qt.QWidget):
         ##################################################
         self.bps = bps = 1e3
         self.M = M = 2
-        self.samp_rate = samp_rate = (int) (2e7)
+        self.samp_rate = samp_rate = (int) (2e6)
         self.packet_bits = packet_bits = 108
         self.header_bits = header_bits = 8
         self.delta_f = delta_f = 1.1 * bps
@@ -107,7 +108,7 @@ class UHF_TX(gr.top_block, Qt.QWidget):
         self.blocks_uchar_to_float_1 = blocks.uchar_to_float()
         self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_char*1, (int)(samp_rate * (1 / baud_rate)))
         self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(1, gr.GR_MSB_FIRST)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, './tx_data', True, 0, 0)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, '/home/tbbg/tx_data', True, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
         self.blocks_add_const_vxx_0_0 = blocks.add_const_ff(demod_offset / delta_f)
 
@@ -122,6 +123,7 @@ class UHF_TX(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_repeat_0_0, 0), (self.blocks_uchar_to_float_1, 0))
         self.connect((self.blocks_uchar_to_float_1, 0), (self.blocks_add_const_vxx_0_0, 0))
         self.connect((self.blocks_vco_c_0_0, 0), (self.osmosdr_sink_0, 0))
+
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "UHF_TX")
@@ -248,6 +250,8 @@ class UHF_TX(gr.top_block, Qt.QWidget):
 
 
 
+
+
 def main(top_block_cls=UHF_TX, options=None):
 
     if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
@@ -256,7 +260,9 @@ def main(top_block_cls=UHF_TX, options=None):
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()
+
     tb.start()
+
     tb.show()
 
     def sig_handler(sig=None, frame=None):
@@ -272,9 +278,9 @@ def main(top_block_cls=UHF_TX, options=None):
     def quitting():
         tb.stop()
         tb.wait()
+
     qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
-
 
 if __name__ == '__main__':
     main()

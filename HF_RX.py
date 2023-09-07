@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: HF RX
 # Author: Jake Sahli
-# GNU Radio version: 3.8.1.0
+# GNU Radio version: 3.8.2.0
 
 from distutils.version import StrictVersion
 
@@ -23,12 +23,14 @@ if __name__ == '__main__':
 
 from PyQt5 import Qt
 from gnuradio import eng_notation
+from gnuradio import qtgui
+from gnuradio.filter import firdes
+import sip
 from gnuradio import analog
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
 from gnuradio import gr
-from gnuradio.filter import firdes
 import sys
 import signal
 from argparse import ArgumentParser
@@ -36,6 +38,7 @@ from gnuradio.eng_arg import eng_float, intx
 import epy_block_0
 import osmosdr
 import time
+
 from gnuradio import qtgui
 
 class HF_RX(gr.top_block, Qt.QWidget):
@@ -114,6 +117,100 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self._rf_gain_display_label = Qt.QLabel(str(self._rf_gain_display_formatter(self.rf_gain_display)))
         self._rf_gain_display_tool_bar.addWidget(self._rf_gain_display_label)
         self.top_grid_layout.addWidget(self._rf_gain_display_tool_bar)
+        self.qtgui_time_sink_x_0_0 = qtgui.time_sink_f(
+            (int) (10 * samp_rate / baud_rate), #size
+            samp_rate , #samp_rate
+            "", #name
+            2 #number of inputs
+        )
+        self.qtgui_time_sink_x_0_0.set_update_time(1)
+        self.qtgui_time_sink_x_0_0.set_y_axis(-1, 2)
+
+        self.qtgui_time_sink_x_0_0.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_0_0.enable_tags(False)
+        self.qtgui_time_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_0_0.enable_autoscale(False)
+        self.qtgui_time_sink_x_0_0.enable_grid(False)
+        self.qtgui_time_sink_x_0_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_0_0.enable_control_panel(False)
+        self.qtgui_time_sink_x_0_0.enable_stem_plot(False)
+
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                self.qtgui_time_sink_x_0_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_time_sink_x_0_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_0_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_0.pyqwidget(), Qt.QWidget)
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_0_win)
+        self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
+            100 * 10, #size
+            10 * samp_rate / baud_rate, #samp_rate
+            "", #name
+            3 #number of inputs
+        )
+        self.qtgui_time_sink_x_0.set_update_time(1)
+        self.qtgui_time_sink_x_0.set_y_axis(-1, 2)
+
+        self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_0.enable_tags(True)
+        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_0.enable_autoscale(False)
+        self.qtgui_time_sink_x_0.enable_grid(False)
+        self.qtgui_time_sink_x_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_0.enable_control_panel(False)
+        self.qtgui_time_sink_x_0.enable_stem_plot(False)
+
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(3):
+            if len(labels[i]) == 0:
+                self.qtgui_time_sink_x_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_time_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win)
         self.osmosdr_source_0 = osmosdr.source(
             args="numchan=" + str(1) + " " + "hackrf=0"
         )
@@ -140,12 +237,12 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self._if_gain_display_label = Qt.QLabel(str(self._if_gain_display_formatter(self.if_gain_display)))
         self._if_gain_display_tool_bar.addWidget(self._if_gain_display_label)
         self.top_grid_layout.addWidget(self._if_gain_display_tool_bar)
-        self.epy_block_0 = epy_block_0.blk(goal_input_level=1.0, hysteresis=1.5, update_period=0.5, auto_log_time_min=15, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain)
+        self.epy_block_0 = epy_block_0.blk(max_input_level=0.9, min_input_level=0.1, update_period=0.5, auto_log_time_min=15, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain)
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_ff(
-            digital.TED_SIGNAL_TIMES_SLOPE_ML,
+            digital.TED_SIGNUM_TIMES_SLOPE_ML,
             samp_per_symbol,
-            0.045,
-            1.0,
+            0.090,
+            2.0,
             1.0,
             1.5,
             1,
@@ -154,14 +251,19 @@ class HF_RX(gr.top_block, Qt.QWidget):
             128,
             [])
         self.blocks_unpacked_to_packed_xx_0 = blocks.unpacked_to_packed_bb(1, gr.GR_MSB_FIRST)
+        self.blocks_uchar_to_float_0 = blocks.uchar_to_float()
         self.blocks_sub_xx_0 = blocks.sub_ff(1)
+        self.blocks_repeat_0_0_1 = blocks.repeat(gr.sizeof_float*1, 10)
+        self.blocks_repeat_0_0_0 = blocks.repeat(gr.sizeof_float*1, 10)
+        self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_float*1, 10)
         self.blocks_multiply_const_vxx_1_0_0 = blocks.multiply_const_ff(1/(agc_integration_const))
-        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(packet_bits, 1/packet_bits, 4000, 1)
+        self.blocks_moving_average_xx_0 = blocks.moving_average_ff(2000, 1/2000, 4000, 1)
         self.blocks_integrate_xx_0 = blocks.integrate_ff(int(agc_integration_const), 1)
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar()
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, './rx_data', False)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, '/home/tbbg/rx_data', False)
         self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
+        self.blocks_complex_to_float_0 = blocks.complex_to_float(1)
         self.blocks_add_const_vxx_0_0 = blocks.add_const_ff(center_frequency_offset_error)
         self._bb_gain_display_tool_bar = Qt.QToolBar(self)
 
@@ -178,7 +280,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
         	channel_rate=samp_rate,
         	audio_decim=1,
         	deviation=(delta_f),
-        	audio_pass=delta_f * 3,
+        	audio_pass=delta_f * 5,
         	audio_stop=delta_f * 7,
         	gain=1.0,
         	tau=0,
@@ -190,18 +292,29 @@ class HF_RX(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.analog_fm_demod_cf_0, 0), (self.digital_symbol_sync_xx_0, 0))
+        self.connect((self.analog_fm_demod_cf_0, 0), (self.qtgui_time_sink_x_0_0, 1))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
+        self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_repeat_0_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_integrate_xx_0, 0))
+        self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_uchar_to_float_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))
         self.connect((self.blocks_integrate_xx_0, 0), (self.blocks_multiply_const_vxx_1_0_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_sub_xx_0, 1))
         self.connect((self.blocks_multiply_const_vxx_1_0_0, 0), (self.epy_block_0, 0))
+        self.connect((self.blocks_repeat_0_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.blocks_repeat_0_0_0, 0), (self.qtgui_time_sink_x_0, 1))
+        self.connect((self.blocks_repeat_0_0_1, 0), (self.qtgui_time_sink_x_0, 2))
         self.connect((self.blocks_sub_xx_0, 0), (self.blocks_add_const_vxx_0_0, 0))
+        self.connect((self.blocks_uchar_to_float_0, 0), (self.blocks_repeat_0_0_1, 0))
         self.connect((self.blocks_unpacked_to_packed_xx_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_moving_average_xx_0, 0))
+        self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_repeat_0_0_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_sub_xx_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.analog_fm_demod_cf_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
+
 
     def closeEvent(self, event):
         self.settings = Qt.QSettings("GNU Radio", "HF_RX")
@@ -240,6 +353,8 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self.set_samp_per_bit((int)(self.samp_rate * (1 / self.bps)))
         self.set_samp_per_symbol((int)(self.samp_rate * (1 / self.baud_rate)))
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0.set_samp_rate(10 * self.samp_rate / self.baud_rate)
+        self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate )
 
     def get_rf_gain(self):
         return self.rf_gain
@@ -255,7 +370,6 @@ class HF_RX(gr.top_block, Qt.QWidget):
     def set_packet_bits(self, packet_bits):
         self.packet_bits = packet_bits
         self.set_payload_bits(self.packet_bits - self.header_bits)
-        self.blocks_moving_average_xx_0.set_length_and_scale(self.packet_bits, 1/self.packet_bits)
 
     def get_if_gain(self):
         return self.if_gain
@@ -293,6 +407,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
     def set_baud_rate(self, baud_rate):
         self.baud_rate = baud_rate
         self.set_samp_per_symbol((int)(self.samp_rate * (1 / self.baud_rate)))
+        self.qtgui_time_sink_x_0.set_samp_rate(10 * self.samp_rate / self.baud_rate)
 
     def get_samp_per_symbol(self):
         return self.samp_per_symbol
@@ -362,6 +477,8 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self.blocks_multiply_const_vxx_1_0_0.set_k(1/(self.agc_integration_const))
 
 
+
+
 def argument_parser():
     parser = ArgumentParser()
     return parser
@@ -377,7 +494,9 @@ def main(top_block_cls=HF_RX, options=None):
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()
+
     tb.start()
+
     tb.show()
 
     def sig_handler(sig=None, frame=None):
@@ -393,9 +512,9 @@ def main(top_block_cls=HF_RX, options=None):
     def quitting():
         tb.stop()
         tb.wait()
+
     qapp.aboutToQuit.connect(quitting)
     qapp.exec_()
-
 
 if __name__ == '__main__':
     main()

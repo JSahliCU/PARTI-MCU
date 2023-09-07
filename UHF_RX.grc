@@ -1248,6 +1248,7 @@ blocks:
 
 connections:
 - [analog_fm_demod_cf_0, '0', digital_symbol_sync_xx_0, '0']
+- [analog_fm_demod_cf_0, '0', qtgui_time_sink_x_0_0, '1']
 - [blocks_add_const_vxx_0_0, '0', blocks_float_to_uchar_0, '0']
 - [blocks_add_const_vxx_0_0, '0', blocks_repeat_0_0, '0']
 - [blocks_complex_to_float_0, '0', qtgui_time_sink_x_0_0, '0']
