@@ -18,7 +18,8 @@ amp_turn_on_wait = 5 # seconds
 wait_for_gnu_radio_to_close = 2 # seconds
 
 class state_machine:
-    def __init__(self):
+    def __init__(self, tune_enable = True):
+        self.tune_enable=tune_enable
         # Transeiver states
         # Always boot to UHF first
         self.band = 'UHF'
@@ -139,12 +140,18 @@ class state_machine:
         else: #self.band == 'HF':
             self.fam_go_control.set_band_HF()
             self.fam_go_control.set_HF_TX()
-            self.process = subprocess.Popen('exec python HF_tune.py', shell=True)
-            time.sleep(amp_turn_on_wait)
-            self.fam_go_control.set_HF_tune_amp()
-            self.tuner.tune()
-            self.fam_go_control.reset_HF_tune_amp()
-            # KILL the GNU Radio program
+            if self.tune_enable:
+                self.process = subprocess.Popen('exec python HF_tune.py', shell=True)
+                time.sleep(amp_turn_on_wait)
+                self.fam_go_control.set_HF_tune_amp()
+                self.tuner.tune()
+                self.fam_go_control.reset_HF_tune_amp()
+                # KILL the HF_tune.py
+                if self.process is not None:
+                    if self.process.poll() is None:
+                        self.process.signal(signal.SIGINT)
+                        time.sleep(wait_for_gnu_radio_to_close)
+            
             if self.transceiver == 'RX':
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_RX, GPIO.HIGH)
                 self.fam_go_control.set_HF_RX()
