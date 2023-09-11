@@ -276,7 +276,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: (int) (2e6)
+    value: (int) (5e5)
   states:
     bus_sink: false
     bus_source: false
@@ -586,7 +586,7 @@ blocks:
     resamp_type: digital.IR_MMSE_8TAP
     sps: samp_per_symbol
     ted_gain: '1.0'
-    ted_type: digital.TED_SIGNUM_TIMES_SLOPE_ML
+    ted_type: digital.TED_SIGNAL_TIMES_SLOPE_ML
     type: ff
   states:
     bus_sink: false
@@ -676,7 +676,7 @@ blocks:
     callback_if_gain: self.set_if_gain
     callback_rf_gain: self.set_rf_gain
     comment: ''
-    max_input_level: '0.9'
+    max_input_level: '0.8'
     maxoutbuf: '0'
     min_input_level: '0.1'
     minoutbuf: '0'
