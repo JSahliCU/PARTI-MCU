@@ -28,19 +28,15 @@ class tuning_bank:
         self.pcf.port = list(reversed(self.port_states))
         time.sleep(0.1)
 
-    def wait_for_coil_to_set(self):
-        time.sleep(0.050) #seconds
-
     def reset_capacitance(self):
         for i, r in enumerate(self.relays):
             self.port_states[r.reset_pin] = False
         
         self.sync_port_states()
-        self.wait_for_coil_to_set()
         self.reset_output()
 
         self.current_capacitance_pF = 0
-        self.bank_state = 0
+        self.bank_state = 127
 
     class relay:
         def __init__(self, set_pin, reset_pin, cap_value):
@@ -48,7 +44,7 @@ class tuning_bank:
             self.reset_pin = reset_pin
             self.cap_value = cap_value
 
-    def set_capacitance(self, cap_pF):
+    def set_capacitance(self, cap_pF, debug=False):
         """Set the bank capacitance to the passed value. 
         Calculates the minimum number of relays to change from the current state to the intended state
 
@@ -63,12 +59,16 @@ class tuning_bank:
         for i, r in enumerate(self.relays):
             cap_value = r.cap_value
             if cap_pF >= cap_value:
+                if debug:
+                    print('s')
                 future_bank_state_ba[i] = False
                 #self.port_states[self.set_caps[cap_value]] = True
                 cap_pF -= cap_value
             else:
+                if debug:
+                    print ('r')
                 future_bank_state_ba[i] = True
-        
+
         # Figure out how to change the bank from the current value 
         # to that future value with the minimum number of relay changes
         future_bank_state = convert_bool_array_to_int(future_bank_state_ba)
@@ -83,13 +83,17 @@ class tuning_bank:
             self.port_states[r.reset_pin] = reset_caps_bool_array[i]
 
         self.sync_port_states()
-        self.wait_for_coil_to_set()
         self.reset_output()
 
         # Store the set capacitance
         self.current_capacitance_pF = self.attempted_set_value - cap_pF
+        if debug:
+            print(self.bank_state)
         self.bank_state = future_bank_state
+        if debug:
+            print(future_bank_state)
 
+        
         # Return the remainder
         return cap_pF
 

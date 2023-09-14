@@ -71,7 +71,8 @@ class state_machine:
         # If the current mode is RX, then rename the rx_data 
         # file with the current band, and timestamp information
 
-        os.rename('rx_data_' + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S'))
+        if self.transceiver == 'RX':
+            os.rename('rx_data', 'rx_data_' + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S'))
 
         if self.transceiver != self.boot_transceiver:
             self.toggle_band()
@@ -99,11 +100,23 @@ class state_machine:
         GPIO.output(led_mappings.led_to_bcm_mapping.HF_RX, GPIO.LOW)
         GPIO.output(led_mappings.led_to_bcm_mapping.HF_TX, GPIO.LOW)
 
-        # Kill the currently running GNU instance
-        if self.process is not None:
-            if self.process.poll() is None:
-                self.process.signal(signal.SIGINT)
-                time.sleep(wait_for_gnu_radio_to_close)
+        def kill_GNU_instance():
+            # Kill the currently running GNU instance by sending interrupt
+            if self.process is not None:
+                if self.process.poll() is None:
+                    self.process.send_signal(signal.SIGINT)
+                    time.sleep(wait_for_gnu_radio_to_close)
+
+            # Can help to power cycle the Hack RF before using it so it comes up in a clean state
+            # Add this to the install.sh script: 
+            # sudo apt-get install uhubctl
+            # Then turn off, wait 5 seconds, then turn on
+            subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/unbind", shell=True)
+            time.sleep(2)
+            subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/bind", shell=True)
+            time.sleep(1)
+
+        kill_GNU_instance()
 
         # Write the GPIOs on the expanders for each state
         # TODO
@@ -118,11 +131,10 @@ class state_machine:
         # Add this to the install.sh script: 
         # sudo apt-get install uhubctl
         # Then turn off, wait 5 seconds, then turn on
-        # subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/unbind", shell=True)
-        # time.sleep(5)
-        # subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/bind", shell=True)
-        # time.sleep(0.5)
-
+        subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/unbind", shell=True)
+        time.sleep(2)
+        subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/bind", shell=True)
+        time.sleep(1)
 
         # Boot into the UHF, HF, TX, RX mode that makes the most sense
         if self.band == 'UHF':
@@ -146,11 +158,8 @@ class state_machine:
                 self.fam_go_control.set_HF_tune_amp()
                 self.tuner.tune()
                 self.fam_go_control.reset_HF_tune_amp()
-                # KILL the HF_tune.py
-                if self.process is not None:
-                    if self.process.poll() is None:
-                        self.process.signal(signal.SIGINT)
-                        time.sleep(wait_for_gnu_radio_to_close)
+                
+                kill_GNU_instance()
             
             if self.transceiver == 'RX':
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_RX, GPIO.HIGH)
