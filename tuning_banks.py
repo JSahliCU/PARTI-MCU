@@ -171,19 +171,19 @@ class tuner():
             self.tb_solid.set_capacitance(int(f.read()))
 
         # Setup the ADC used for tuning
-        self.adc = ADCPi(0x68, 0x68, 18, 1) # TODO check bus setting
+        self.adc = ADCPi(0x68, 0x68, 18, 0) # TODO check bus setting
         self.adc.set_conversion_mode(0) 
 
     def read_voltage_solid(self):
         ret_val = 0
         for i in range(NUMBER_OF_AVERAGES):
-            ret_val += self.adc.read_voltage(1)*(3.3 / 5) + (3.3 / 2)
+            ret_val += self.adc.read_raw(1)
         return ret_val / NUMBER_OF_AVERAGES
 
     def read_voltage_split(self):
         ret_val = 0
         for i in range(NUMBER_OF_AVERAGES):
-            ret_val += self.adc.read_voltage(2)*(3.3 / 5) + (3.3 / 2)
+            ret_val += self.adc.read_raw(2)
         return ret_val / NUMBER_OF_AVERAGES
 
     def wait_for_adc_settle_time(self):
