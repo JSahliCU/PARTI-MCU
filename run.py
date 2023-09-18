@@ -185,6 +185,11 @@ def main(enable_amplifier_supplies=True):
     # Init
     write_to_log('Initializing')
 
+    # Initialize light controls
+    # Set numbering system to broadcom chip numbering scheme
+    # (as opposed to GPIO.BOARD which would be the header numbering scheme)
+    GPIO.setmode(GPIO.BCM)
+
     # Store the PID for the hearbeat detector cronjob, and store an initial heartbeat
     with open('run_pid.txt', 'w') as f:
         print(os.getpid(), file=f)
@@ -193,11 +198,6 @@ def main(enable_amplifier_supplies=True):
 
     # Initialize the state object
     sm = state_machine()
-
-    # Initialize light controls
-    # Set numbering system to broadcom chip numbering scheme
-    # (as opposed to GPIO.BOARD which would be the header numbering scheme)
-    GPIO.setmode(GPIO.BCM)
 
     # Setup all of the LED pins as outputs, and off
     for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
