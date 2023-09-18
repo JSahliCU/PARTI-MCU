@@ -14,7 +14,7 @@ heartbeat_interval = 30 # seconds
 error_log_file = 'error.log'
 error_blink_interval = 1 # seconds
 
-amp_turn_on_wait = 5 # seconds
+amp_turn_on_wait = 10 # seconds
 wait_for_gnu_radio_to_close = 2 # seconds
 
 class state_machine:
@@ -25,9 +25,10 @@ class state_machine:
         self.band = 'UHF'
         # Check if RX/TX device and set for boot state
         with open('boot.txt', 'r') as f:
-            if f.read() == 'RX':
+            text = f.read()
+            if text == 'RX':
                 self.transceiver = 'RX'
-            elif f.read() == 'TX':
+            elif text == 'TX':
                 self.transceiver = 'TX'
             else:
                 throw_error('boot.txt file contains invalid state')
@@ -127,15 +128,6 @@ class state_machine:
             write_to_log('Shutting Down')
             subprocess.call("sudo shutdown -h now", shell=True)
 
-        # Can help to power cycle the Hack RF before using it so it comes up in a clean state
-        # Add this to the install.sh script: 
-        # sudo apt-get install uhubctl
-        # Then turn off, wait 5 seconds, then turn on
-        subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/unbind", shell=True)
-        time.sleep(2)
-        subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/bind", shell=True)
-        time.sleep(1)
-
         # Boot into the UHF, HF, TX, RX mode that makes the most sense
         if self.band == 'UHF':
             self.fam_go_control.set_band_UHF()
@@ -153,7 +145,7 @@ class state_machine:
             self.fam_go_control.set_band_HF()
             self.fam_go_control.set_HF_TX()
             if self.tune_enable:
-                self.process = subprocess.Popen('exec python HF_tune.py', shell=True)
+                self.process = subprocess.Popen('exec python HF_TUNE.py', shell=True)
                 time.sleep(amp_turn_on_wait)
                 self.fam_go_control.set_HF_tune_amp()
                 self.tuner.tune()
@@ -189,7 +181,7 @@ def throw_error(log_msg):
                 GPIO.output(bcm_i, GPIO.LOW)
             time.sleep(error_blink_interval - ((time.time() - starttime) % error_blink_interval))
 
-def main():
+def main(enable_amplifier_supplies=True):
     # Init
     write_to_log('Initializing')
 
@@ -215,14 +207,16 @@ def main():
     # Initialize the heartbeat light
     mcu_light_state = False
 
-    # Turn on all the supplies, just in case they are off
+    # Turn on all the supplies if enable amplifier supplies is set
     # UHF Supply
     GPIO.setup(4, GPIO.OUT)
-    GPIO.output(4, GPIO.LOW)
+    GPIO.output(4, GPIO.LOW if enable_amplifier_supplies else GPIO.HIGH)
 
     # HF Supply (Disconnected by default)
     GPIO.setup(20, GPIO.OUT)
-    GPIO.output(20, GPIO.LOW)
+    GPIO.output(20, GPIO.LOW if enable_amplifier_supplies else GPIO.HIGH)
+
+    if not enable_amplifier_supplies: input('Check that amplifier supplies are disabled') 
 
     # No need to set the 5.1 V enable, because HiZ is on, and the default state of the GPIO pin is HiZ
 
