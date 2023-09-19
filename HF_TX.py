@@ -22,6 +22,7 @@ if __name__ == '__main__':
             print("Warning: failed to XInitThreads()")
 
 from gnuradio import blocks
+import pmt
 from gnuradio import gr
 from gnuradio.filter import firdes
 import sys
@@ -103,10 +104,12 @@ class HF_TX(gr.top_block, Qt.QWidget):
         self.osmosdr_sink_0.set_bb_gain(bb_gain, 0)
         self.osmosdr_sink_0.set_antenna('', 0)
         self.osmosdr_sink_0.set_bandwidth(demod_offset*2 + delta_f * 10, 0)
-        self.blocks_vector_source_x_0 = blocks.vector_source_b((0, 1), True, 1, [])
         self.blocks_vco_c_0_0 = blocks.vco_c(samp_rate, (delta_f) * 2 * 3.14159, 1)
         self.blocks_uchar_to_float_1 = blocks.uchar_to_float()
         self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_char*1, (int)(samp_rate * (1 / baud_rate)))
+        self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(1, gr.GR_MSB_FIRST)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, '/home/tbbg/tx_data', True, 0, 0)
+        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
         self.blocks_add_const_vxx_0_0 = blocks.add_const_ff(demod_offset / delta_f)
 
 
@@ -115,10 +118,11 @@ class HF_TX(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_vco_c_0_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_packed_to_unpacked_xx_0, 0))
+        self.connect((self.blocks_packed_to_unpacked_xx_0, 0), (self.blocks_repeat_0_0, 0))
         self.connect((self.blocks_repeat_0_0, 0), (self.blocks_uchar_to_float_1, 0))
         self.connect((self.blocks_uchar_to_float_1, 0), (self.blocks_add_const_vxx_0_0, 0))
         self.connect((self.blocks_vco_c_0_0, 0), (self.osmosdr_sink_0, 0))
-        self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_repeat_0_0, 0))
 
 
     def closeEvent(self, event):

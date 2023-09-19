@@ -171,15 +171,18 @@ def write_to_log(log_msg):
 def throw_error(log_msg):
     write_to_log("ERROR: " + log_msg)
 
+    for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
+        GPIO.setup(bcm_i, GPIO.OUT)
+        
     while True:
         starttime = time.time()
-        while True:
-            for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
-                GPIO.output(bcm_i, GPIO.HIGH)
-            time.sleep(error_blink_interval - ((time.time() - starttime) % error_blink_interval))
-            for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
-                GPIO.output(bcm_i, GPIO.LOW)
-            time.sleep(error_blink_interval - ((time.time() - starttime) % error_blink_interval))
+        for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
+            GPIO.output(bcm_i, GPIO.HIGH)
+        time.sleep(error_blink_interval - ((time.time() - starttime) % error_blink_interval))
+        starttime = time.time()
+        for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
+            GPIO.output(bcm_i, GPIO.LOW)
+        time.sleep(error_blink_interval - ((time.time() - starttime) % error_blink_interval))
 
 def main(enable_amplifier_supplies=True):
     # Init
