@@ -1,9 +1,10 @@
-    
-def ber_estimator(verbose=False, max_errors_per_clip_range=5):
+import argparse
+
+def ber_estimator(rx_data_location, verbose=False, max_errors_per_clip_range=5):
     import numpy as np
 
     with open("tx_data", 'rb') as transmitted_binary:
-        with open("rx_data", 'rb') as received_binary:
+        with open(rx_data_location, 'rb') as received_binary:
             transmitted_array = np.asarray(bytearray(transmitted_binary.read()))
             received_array = np.asarray(bytearray(received_binary.read()))
 
@@ -85,4 +86,13 @@ def ber_estimator(verbose=False, max_errors_per_clip_range=5):
     return bit_error_rate, number_of_errors, len(transmitted_bits), len(received_bits), tau_min
 
 if __name__ == '__main__':
-    ber_estimator(verbose=True)
+    parser = argparse.ArgumentParser(
+                    prog='Bit Error Rate Estimator for PARTI Pucks')
+    parser.add_argument('filename', 
+                        nargs='?', 
+                        default='rx_data', 
+                        help='location of the received data i.e. rx_dataYYYYMMDDTHHMMSS')
+    
+    args = parser.parse_args()
+
+    ber_estimator(args.filename, verbose=True)
