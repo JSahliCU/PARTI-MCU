@@ -89,10 +89,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                     prog='Bit Error Rate Estimator for PARTI Pucks')
     parser.add_argument('filename', 
-                        nargs='?', 
-                        default='rx_data', 
+                        nargs='*', 
+                        default=['rx_data'], 
                         help='location of the received data i.e. rx_dataYYYYMMDDTHHMMSS')
     
     args = parser.parse_args()
 
-    ber_estimator(args.filename, verbose=True)
+    for f in args.filename:
+        print('Analyzing ' + f + '...')
+        ber_estimator(f, verbose=True)
