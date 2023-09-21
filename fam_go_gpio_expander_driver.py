@@ -1,5 +1,6 @@
 from pcf8575 import PCF8575
 import time
+from error_log import write_to_log, throw_error
 
 class fam_go_gpio_expander:
     def __init__(self):
@@ -63,7 +64,10 @@ class fam_go_gpio_expander:
     # HF Power amp control
     def set_HF_pwr_amp(self):
         self.reset_HF_tune_amp()
-        self._set_HF_pwr_amp_control(False)
+        try: # Occasionally this sequence will throw an OS Error for no discernable reason, even though the command still works
+            self._set_HF_pwr_amp_control(False)
+        except(OSError) as e:
+            write_to_log('OSError 121 caught during set_HF_pwr_amp')
 
     def reset_HF_pwr_amp(self):
         self._set_HF_pwr_amp_control(True)

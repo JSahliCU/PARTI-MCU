@@ -9,10 +9,9 @@ import led_mappings
 import tuning_banks
 from fam_go_gpio_expander_driver import fam_go_gpio_expander
 
-heartbeat_interval = 30 # seconds
+from error_log import write_to_log, throw_error
 
-error_log_file = 'error.log'
-error_blink_interval = 1 # seconds
+heartbeat_interval = 30 # seconds
 
 amp_turn_on_wait = 10 # seconds
 wait_for_gnu_radio_to_close = 2 # seconds
@@ -159,30 +158,9 @@ class state_machine:
                 self.process = subprocess.Popen('exec python HF_RX.py', shell=True)
             else: # self.transceiver == 'TX'
                 GPIO.output(led_mappings.led_to_bcm_mapping.HF_TX, GPIO.HIGH)
-                self.fam_go_control.set_HF_TX()
                 self.process = subprocess.Popen('exec python HF_TX.py', shell=True)
                 time.sleep(amp_turn_on_wait) 
                 self.fam_go_control.set_HF_pwr_amp()
-
-def write_to_log(log_msg):
-    with open(error_log_file, 'a') as f:
-        print(str(datetime.datetime.now()) + "UTC " + log_msg, file=f)
-
-def throw_error(log_msg):
-    write_to_log("ERROR: " + log_msg)
-
-    for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
-        GPIO.setup(bcm_i, GPIO.OUT)
-        
-    while True:
-        starttime = time.time()
-        for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
-            GPIO.output(bcm_i, GPIO.HIGH)
-        time.sleep(error_blink_interval - ((time.time() - starttime) % error_blink_interval))
-        starttime = time.time()
-        for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
-            GPIO.output(bcm_i, GPIO.LOW)
-        time.sleep(error_blink_interval - ((time.time() - starttime) % error_blink_interval))
 
 def main(enable_amplifier_supplies=True):
     # Init
