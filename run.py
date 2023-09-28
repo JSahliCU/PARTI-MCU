@@ -57,6 +57,9 @@ class state_machine:
         # Initialize the gnuradio-companion &
         self.process = None
 
+        # Flag that indicates a rx_data file needs to be renamed
+        self.to_rename_rx_data = None
+
     def __str__(self):
         return self.band + ', ' + self.transceiver
 
@@ -72,7 +75,7 @@ class state_machine:
         # file with the current band, and timestamp information
 
         if self.transceiver == 'RX':
-            os.rename('rx_data', 'rx_data_' + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S'))
+            self.to_rename_rx_data = '/home/tbbg/rx_data_' + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S')
 
         if self.transceiver != self.boot_transceiver:
             self.toggle_band()
@@ -115,6 +118,13 @@ class state_machine:
             time.sleep(2)
             subprocess.call("echo '1-1' | sudo tee /sys/bus/usb/drivers/usb/bind", shell=True)
             time.sleep(1)
+
+            if self.to_rename_rx_data is not None:
+                try:
+                    os.rename('/home/tbbg/rx_data', self.to_rename_rx_data)
+                except FileNotFoundError as e:
+                    write_to_log(e.__str__())
+                self.to_rename_rx_data = None
 
         kill_GNU_instance()
 
