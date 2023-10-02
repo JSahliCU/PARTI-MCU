@@ -2,13 +2,13 @@ from run import state_machine
 import RPi.GPIO as GPIO
 import led_mappings
 
-# Initialize the state object
-sm = state_machine()
-
 # Initialize light controls
 # Set numbering system to broadcom chip numbering scheme
 # (as opposed to GPIO.BOARD which would be the header numbering scheme)
 GPIO.setmode(GPIO.BCM)
+
+# Initialize the state object
+sm = state_machine()
 
 # Setup all of the LED pins as outputs, and off
 for bcm_i in led_mappings.led_index_to_bcm_mapping.values():
