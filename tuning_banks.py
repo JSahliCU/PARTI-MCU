@@ -5,6 +5,8 @@ import time
 from ADCPi import ADCPi
 import datetime
 
+from error_log import write_to_log, throw_error
+
 def convert_bool_array_to_int(bool_array, big_endian=True, weights=None):
     if weights is not None:
         return sum(weights[i]*b for i, b in enumerate(bool_array))
@@ -193,54 +195,65 @@ class tuner():
         # Turn off the tuning LEDs while tuning
         GPIO.output(SOLID_LED, GPIO.LOW)
         GPIO.output(SPLIT_LED, GPIO.LOW)
+
+        light_state = False
         
         # Read from both ADCs, try moving up in capacitance and down on 
         # each individually, then both same direction, both opposite directions
         # and see if any direction decreases the voltage read, repeat 20 times
-        with open('tuning_log_file.txt', 'a') as f:
-            for i in range(20):
-                # Check voltage at current state
-                nominal_capacitance_solid = self.tb_solid.current_capacitance_pF
-                nominal_capacitance_split = self.tb_split.current_capacitance_pF
 
-                # Check voltage in all directions
-                test_settings = [
-                    # so, sp, vo
-                    (nominal_capacitance_solid, nominal_capacitance_split),
-                    (nominal_capacitance_solid+1, nominal_capacitance_split),
-                    (nominal_capacitance_solid, nominal_capacitance_split+1),
-                    (nominal_capacitance_solid-1, nominal_capacitance_split),
-                    (nominal_capacitance_solid, nominal_capacitance_split-1),
-                    (nominal_capacitance_solid+1, nominal_capacitance_split+1),
-                    (nominal_capacitance_solid+1, nominal_capacitance_split-1),
-                    (nominal_capacitance_solid-1, nominal_capacitance_split+1),
-                    (nominal_capacitance_solid-1, nominal_capacitance_split-1),
-                ]
+        write_to_log('Tuning HF system')
+        for i in range(10):
+            # Check voltage at current state
+            nominal_capacitance_solid = self.tb_solid.current_capacitance_pF
+            nominal_capacitance_split = self.tb_split.current_capacitance_pF
 
-                test_results = []
+            # Check voltage in all directions
+            test_settings = [
+                # so, sp, vo
+                (nominal_capacitance_solid, nominal_capacitance_split),
+                (nominal_capacitance_solid+1, nominal_capacitance_split),
+                (nominal_capacitance_solid, nominal_capacitance_split+1),
+                (nominal_capacitance_solid-1, nominal_capacitance_split),
+                (nominal_capacitance_solid, nominal_capacitance_split-1),
+                (nominal_capacitance_solid+1, nominal_capacitance_split+1),
+                (nominal_capacitance_solid+1, nominal_capacitance_split-1),
+                (nominal_capacitance_solid-1, nominal_capacitance_split+1),
+                (nominal_capacitance_solid-1, nominal_capacitance_split-1),
+            ]
 
-                for so, sp in test_settings:
-                    self.tb_solid.set_capacitance(so) # Log if returns value that is not 0
-                    self.tb_split.set_capacitance(sp) # Log if returns value that is not 0
-                    self.wait_for_adc_settle_time()
-                    adc_read_val = self.read_voltage_solid() + self.read_voltage_split()
-                    test_results.append((so, sp, adc_read_val))
+            test_results = []
 
-                test_results.sort(key=lambda tup: tup[2])  # sort the values in ascending order of adc read val
+            for so, sp in test_settings:
+                self.tb_solid.set_capacitance(so) # Log if returns value that is not 0
+                self.tb_split.set_capacitance(sp) # Log if returns value that is not 0
+                self.wait_for_adc_settle_time()
+                adc_read_val = self.read_voltage_solid() + self.read_voltage_split()
+                test_results.append((so, sp, adc_read_val))
 
-                new_cap_solid = test_results[0][0]
-                new_cap_split = test_results[0][1]
-                min_volt_found = test_results[0][2]
+            test_results.sort(key=lambda tup: tup[2])  # sort the values in ascending order of adc read val
 
-                self.tb_solid.set_capacitance(new_cap_solid) # Log if returns value that is not 0
-                self.tb_split.set_capacitance(new_cap_split) # Log if returns value that is not 0
+            new_cap_solid = test_results[0][0]
+            new_cap_split = test_results[0][1]
+            min_volt_found = test_results[0][2]
 
-                # Given set capacitance times of 50 mS, and read settle times of 50 mS, 
-                # this will update the heartbeat every ~1.5 seconds
-                with open('heartbeat.txt', 'w') as f1:
-                    print(str(datetime.datetime.now()), file=f1)
+            self.tb_solid.set_capacitance(new_cap_solid) # Log if returns value that is not 0
+            self.tb_split.set_capacitance(new_cap_split) # Log if returns value that is not 0
 
-                print(str(new_cap_solid) +','+ str(new_cap_split) + ',' + str(min_volt_found), file=f)
+            # Update the heartbeat file
+            with open('heartbeat.txt', 'w') as f:
+                print(str(datetime.datetime.now()), file=f)
+
+            # Log the capacitance value to the error file, just in case there some
+            write_to_log(str(new_cap_solid) +','+ str(new_cap_split) + ',' + str(min_volt_found))
+
+            light_state = not light_state
+            if light_state:
+                GPIO.output(SOLID_LED, GPIO.HIGH)
+                GPIO.output(SPLIT_LED, GPIO.HIGH)
+            else:
+                GPIO.output(SOLID_LED, GPIO.LOW)
+                GPIO.output(SPLIT_LED, GPIO.LOW)         
 
         # Turn the Tuning LEDs to tuned
         GPIO.output(SOLID_LED, GPIO.HIGH)
