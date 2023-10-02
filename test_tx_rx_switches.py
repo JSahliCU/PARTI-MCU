@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 import led_mappings
 
 # Initialize the state object
-sm = state_machine(tune_enable=False)
+sm = state_machine()
 
 # Initialize light controls
 # Set numbering system to broadcom chip numbering scheme
