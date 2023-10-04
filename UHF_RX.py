@@ -226,6 +226,15 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.osmosdr_source_0.set_bb_gain(bb_gain, 0)
         self.osmosdr_source_0.set_antenna('', 0)
         self.osmosdr_source_0.set_bandwidth(bandwidth * 10 + demod_offset * 2, 0)
+        self.low_pass_filter_0 = filter.fir_filter_ccf(
+            1,
+            firdes.low_pass(
+                1,
+                samp_rate,
+                10e3,
+                3e3,
+                firdes.WIN_HAMMING,
+                6.76))
         self._if_gain_display_tool_bar = Qt.QToolBar(self)
 
         if None:
@@ -295,8 +304,8 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.analog_fm_demod_cf_0, 0), (self.qtgui_time_sink_x_0_0, 1))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_repeat_0_0, 0))
-        self.connect((self.blocks_complex_to_float_0, 1), (self.qtgui_time_sink_x_0_0, 2))
         self.connect((self.blocks_complex_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.qtgui_time_sink_x_0_0, 2))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_integrate_xx_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_uchar_to_float_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))
@@ -312,9 +321,10 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_repeat_0_0_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_sub_xx_0, 0))
-        self.connect((self.osmosdr_source_0, 0), (self.analog_fm_demod_cf_0, 0))
-        self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_float_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.analog_fm_demod_cf_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.low_pass_filter_0, 0))
 
 
     def closeEvent(self, event):
@@ -353,6 +363,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_samp_per_bit((int)(self.samp_rate * (1 / self.bps)))
         self.set_samp_per_symbol((int)(self.samp_rate * (1 / self.baud_rate)))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 10e3, 3e3, firdes.WIN_HAMMING, 6.76))
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(10 * self.samp_rate / self.baud_rate)
         self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate )

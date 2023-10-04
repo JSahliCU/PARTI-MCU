@@ -303,7 +303,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [373, 233]
+    coordinate: [496, 220.0]
     rotation: 0
     state: true
 - name: blocks_add_const_vxx_0_0
@@ -694,6 +694,30 @@ blocks:
     coordinate: [898, 537]
     rotation: 0
     state: true
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: 10e3
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fir_filter_ccf
+    width: 3e3
+    win: firdes.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [344, 332.0]
+    rotation: 0
+    state: enabled
 - name: osmosdr_source_0
   id: osmosdr_source
   parameters:
@@ -1268,9 +1292,10 @@ connections:
 - [digital_symbol_sync_xx_0, '0', blocks_moving_average_xx_0, '0']
 - [digital_symbol_sync_xx_0, '0', blocks_repeat_0_0_0, '0']
 - [digital_symbol_sync_xx_0, '0', blocks_sub_xx_0, '0']
-- [osmosdr_source_0, '0', analog_fm_demod_cf_0, '0']
-- [osmosdr_source_0, '0', blocks_complex_to_float_0, '0']
+- [low_pass_filter_0, '0', analog_fm_demod_cf_0, '0']
+- [low_pass_filter_0, '0', blocks_complex_to_float_0, '0']
 - [osmosdr_source_0, '0', blocks_complex_to_mag_squared_0, '0']
+- [osmosdr_source_0, '0', low_pass_filter_0, '0']
 
 metadata:
   file_format: 1
