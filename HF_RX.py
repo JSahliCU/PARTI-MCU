@@ -121,7 +121,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
             (int) (10 * samp_rate / baud_rate), #size
             samp_rate , #samp_rate
             "", #name
-            2 #number of inputs
+            3 #number of inputs
         )
         self.qtgui_time_sink_x_0_0.set_update_time(1)
         self.qtgui_time_sink_x_0_0.set_y_axis(-1, 2)
@@ -151,7 +151,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
             -1, -1, -1, -1, -1]
 
 
-        for i in range(2):
+        for i in range(3):
             if len(labels[i]) == 0:
                 self.qtgui_time_sink_x_0_0.set_line_label(i, "Data {0}".format(i))
             else:
@@ -225,7 +225,16 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self.osmosdr_source_0.set_if_gain(if_gain, 0)
         self.osmosdr_source_0.set_bb_gain(bb_gain, 0)
         self.osmosdr_source_0.set_antenna('', 0)
-        self.osmosdr_source_0.set_bandwidth(bandwidth * 10 + demod_offset * 2, 0)
+        self.osmosdr_source_0.set_bandwidth(5e3, 0)
+        self.low_pass_filter_0 = filter.fir_filter_ccf(
+            1,
+            firdes.low_pass(
+                1,
+                samp_rate,
+                5e3,
+                3e3,
+                firdes.WIN_HAMMING,
+                6.76))
         self._if_gain_display_tool_bar = Qt.QToolBar(self)
 
         if None:
@@ -281,7 +290,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
         	audio_decim=1,
         	deviation=(delta_f),
         	audio_pass=delta_f * 3,
-        	audio_stop=delta_f * 7,
+        	audio_stop=delta_f * 5,
         	gain=1.0,
         	tau=0,
         )
@@ -296,6 +305,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_repeat_0_0, 0))
         self.connect((self.blocks_complex_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.qtgui_time_sink_x_0_0, 2))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_integrate_xx_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_uchar_to_float_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))
@@ -311,9 +321,10 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_repeat_0_0_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.blocks_sub_xx_0, 0))
-        self.connect((self.osmosdr_source_0, 0), (self.analog_fm_demod_cf_0, 0))
-        self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_float_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.analog_fm_demod_cf_0, 0))
+        self.connect((self.low_pass_filter_0, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.low_pass_filter_0, 0))
 
 
     def closeEvent(self, event):
@@ -352,6 +363,7 @@ class HF_RX(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_samp_per_bit((int)(self.samp_rate * (1 / self.bps)))
         self.set_samp_per_symbol((int)(self.samp_rate * (1 / self.baud_rate)))
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 5e3, 3e3, firdes.WIN_HAMMING, 6.76))
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(10 * self.samp_rate / self.baud_rate)
         self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate )
@@ -453,7 +465,6 @@ class HF_RX(gr.top_block, Qt.QWidget):
 
     def set_demod_offset(self, demod_offset):
         self.demod_offset = demod_offset
-        self.osmosdr_source_0.set_bandwidth(self.bandwidth * 10 + self.demod_offset * 2, 0)
 
     def get_bb_gain_display(self):
         return self.bb_gain_display
@@ -467,7 +478,6 @@ class HF_RX(gr.top_block, Qt.QWidget):
 
     def set_bandwidth(self, bandwidth):
         self.bandwidth = bandwidth
-        self.osmosdr_source_0.set_bandwidth(self.bandwidth * 10 + self.demod_offset * 2, 0)
 
     def get_agc_integration_const(self):
         return self.agc_integration_const

@@ -291,7 +291,7 @@ blocks:
     alias: ''
     audio_decim: '1'
     audio_pass: delta_f * 3
-    audio_stop: delta_f * 7
+    audio_stop: delta_f * 5
     chan_rate: samp_rate
     comment: ''
     deviation: (delta_f)
@@ -303,7 +303,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [377, 232]
+    coordinate: [560, 204.0]
     rotation: 0
     state: true
 - name: blocks_add_const_vxx_0_0
@@ -424,7 +424,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1016, 358]
+    coordinate: [1136, 388.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_1_0_0
@@ -592,7 +592,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [608, 308.0]
+    coordinate: [696, 324.0]
     rotation: 0
     state: true
 - name: epy_block_0
@@ -694,6 +694,30 @@ blocks:
     coordinate: [940, 508]
     rotation: 0
     state: true
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: 5e3
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fir_filter_ccf
+    width: 3e3
+    win: firdes.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 244.0]
+    rotation: 0
+    state: enabled
 - name: osmosdr_source_0
   id: osmosdr_source
   parameters:
@@ -764,7 +788,7 @@ blocks:
     bb_gain7: '20'
     bb_gain8: '20'
     bb_gain9: '20'
-    bw0: bandwidth * 10 + demod_offset * 2
+    bw0: 5e3
     bw1: '0'
     bw10: '0'
     bw11: '0'
@@ -1202,7 +1226,7 @@ blocks:
     marker8: '-1'
     marker9: '-1'
     name: '""'
-    nconnections: '2'
+    nconnections: '3'
     size: (int) (10 * samp_rate / baud_rate)
     srate: 'samp_rate '
     stemplot: 'False'
@@ -1252,6 +1276,7 @@ connections:
 - [blocks_add_const_vxx_0_0, '0', blocks_float_to_uchar_0, '0']
 - [blocks_add_const_vxx_0_0, '0', blocks_repeat_0_0, '0']
 - [blocks_complex_to_float_0, '0', qtgui_time_sink_x_0_0, '0']
+- [blocks_complex_to_float_0, '1', qtgui_time_sink_x_0_0, '2']
 - [blocks_complex_to_mag_squared_0, '0', blocks_integrate_xx_0, '0']
 - [blocks_float_to_uchar_0, '0', blocks_uchar_to_float_0, '0']
 - [blocks_float_to_uchar_0, '0', blocks_unpacked_to_packed_xx_0, '0']
@@ -1267,9 +1292,10 @@ connections:
 - [digital_symbol_sync_xx_0, '0', blocks_moving_average_xx_0, '0']
 - [digital_symbol_sync_xx_0, '0', blocks_repeat_0_0_0, '0']
 - [digital_symbol_sync_xx_0, '0', blocks_sub_xx_0, '0']
-- [osmosdr_source_0, '0', analog_fm_demod_cf_0, '0']
-- [osmosdr_source_0, '0', blocks_complex_to_float_0, '0']
+- [low_pass_filter_0, '0', analog_fm_demod_cf_0, '0']
+- [low_pass_filter_0, '0', blocks_complex_to_float_0, '0']
 - [osmosdr_source_0, '0', blocks_complex_to_mag_squared_0, '0']
+- [osmosdr_source_0, '0', low_pass_filter_0, '0']
 
 metadata:
   file_format: 1

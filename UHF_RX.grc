@@ -148,12 +148,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 413e6
+    value: 413e6 - 2e3
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [964, 14]
+    coordinate: [912, 12.0]
     rotation: 0
     state: enabled
 - name: header_bits
@@ -1202,7 +1202,7 @@ blocks:
     marker8: '-1'
     marker9: '-1'
     name: '""'
-    nconnections: '2'
+    nconnections: '3'
     size: (int) (10 * samp_rate / baud_rate)
     srate: 'samp_rate '
     stemplot: 'False'
@@ -1236,13 +1236,13 @@ blocks:
     width9: '1'
     ylabel: Amplitude
     ymax: '2'
-    ymin: '-1'
+    ymin: '-2'
     yunit: '""'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1466, 626]
+    coordinate: [1480, 620.0]
     rotation: 0
     state: true
 
@@ -1252,6 +1252,7 @@ connections:
 - [blocks_add_const_vxx_0_0, '0', blocks_float_to_uchar_0, '0']
 - [blocks_add_const_vxx_0_0, '0', blocks_repeat_0_0, '0']
 - [blocks_complex_to_float_0, '0', qtgui_time_sink_x_0_0, '0']
+- [blocks_complex_to_float_0, '1', qtgui_time_sink_x_0_0, '2']
 - [blocks_complex_to_mag_squared_0, '0', blocks_integrate_xx_0, '0']
 - [blocks_float_to_uchar_0, '0', blocks_uchar_to_float_0, '0']
 - [blocks_float_to_uchar_0, '0', blocks_unpacked_to_packed_xx_0, '0']

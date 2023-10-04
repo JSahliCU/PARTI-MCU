@@ -97,7 +97,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.rf_gain_display = rf_gain_display = rf_gain
         self.payload_bits = payload_bits = packet_bits - header_bits
         self.if_gain_display = if_gain_display = if_gain
-        self.freq = freq = 413e6
+        self.freq = freq = 413e6 - 2e3
         self.demod_offset = demod_offset = 1e3
         self.bb_gain_display = bb_gain_display = bb_gain
         self.bandwidth = bandwidth = M * delta_f
@@ -121,10 +121,10 @@ class UHF_RX(gr.top_block, Qt.QWidget):
             (int) (10 * samp_rate / baud_rate), #size
             samp_rate , #samp_rate
             "", #name
-            2 #number of inputs
+            3 #number of inputs
         )
         self.qtgui_time_sink_x_0_0.set_update_time(1)
-        self.qtgui_time_sink_x_0_0.set_y_axis(-1, 2)
+        self.qtgui_time_sink_x_0_0.set_y_axis(-2, 2)
 
         self.qtgui_time_sink_x_0_0.set_y_label('Amplitude', "")
 
@@ -151,7 +151,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
             -1, -1, -1, -1, -1]
 
 
-        for i in range(2):
+        for i in range(3):
             if len(labels[i]) == 0:
                 self.qtgui_time_sink_x_0_0.set_line_label(i, "Data {0}".format(i))
             else:
@@ -295,6 +295,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.analog_fm_demod_cf_0, 0), (self.qtgui_time_sink_x_0_0, 1))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_repeat_0_0, 0))
+        self.connect((self.blocks_complex_to_float_0, 1), (self.qtgui_time_sink_x_0_0, 2))
         self.connect((self.blocks_complex_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_integrate_xx_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_uchar_to_float_0, 0))
