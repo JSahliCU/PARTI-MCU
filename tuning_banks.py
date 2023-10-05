@@ -230,6 +230,15 @@ class tuner():
                 self.wait_for_adc_settle_time()
                 adc_read_val = self.read_voltage_solid() + self.read_voltage_split()
                 test_results.append((so, sp, adc_read_val))
+                
+                light_state = not light_state
+                if light_state:
+                    GPIO.output(SOLID_LED, GPIO.HIGH)
+                    GPIO.output(SPLIT_LED, GPIO.HIGH)
+                else:
+                    GPIO.output(SOLID_LED, GPIO.LOW)
+                    GPIO.output(SPLIT_LED, GPIO.LOW)    
+
                 with open('heartbeat.txt', 'w') as f:
                     print(str(datetime.datetime.now()), file=f)
 
@@ -242,20 +251,8 @@ class tuner():
             self.tb_solid.set_capacitance(new_cap_solid) # Log if returns value that is not 0
             self.tb_split.set_capacitance(new_cap_split) # Log if returns value that is not 0
 
-            # Update the heartbeat file
-            with open('heartbeat.txt', 'w') as f:
-                print(str(datetime.datetime.now()), file=f)
-
             # Log the capacitance value to the error file, just in case there some
-            write_to_log(str(new_cap_solid) +','+ str(new_cap_split) + ',' + str(min_volt_found))
-
-            light_state = not light_state
-            if light_state:
-                GPIO.output(SOLID_LED, GPIO.HIGH)
-                GPIO.output(SPLIT_LED, GPIO.HIGH)
-            else:
-                GPIO.output(SOLID_LED, GPIO.LOW)
-                GPIO.output(SPLIT_LED, GPIO.LOW)         
+            write_to_log(str(new_cap_solid) +','+ str(new_cap_split) + ',' + str(min_volt_found))     
 
         # Turn the Tuning LEDs to tuned
         GPIO.output(SOLID_LED, GPIO.HIGH)
