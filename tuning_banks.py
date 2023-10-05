@@ -189,7 +189,7 @@ class tuner():
         return ret_val / NUMBER_OF_AVERAGES
 
     def wait_for_adc_settle_time(self):
-        time.sleep(0.050)
+        time.sleep(5)
 
     def tune(self):
         # Turn off the tuning LEDs while tuning
@@ -230,6 +230,8 @@ class tuner():
                 self.wait_for_adc_settle_time()
                 adc_read_val = self.read_voltage_solid() + self.read_voltage_split()
                 test_results.append((so, sp, adc_read_val))
+                with open('heartbeat.txt', 'w') as f:
+                    print(str(datetime.datetime.now()), file=f)
 
             test_results.sort(key=lambda tup: tup[2])  # sort the values in ascending order of adc read val
 
