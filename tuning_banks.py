@@ -187,7 +187,7 @@ class tuner():
         return ret_val / NUMBER_OF_AVERAGES
 
     def wait_for_adc_settle_time(self):
-        time.sleep(0.050)
+        time.sleep(5)
 
     def tune(self):
         # Turn off the tuning LEDs while tuning
@@ -197,49 +197,50 @@ class tuner():
         # Read from both ADCs, try moving up in capacitance and down on 
         # each individually, then both same direction, both opposite directions
         # and see if any direction decreases the voltage read, repeat 20 times
-        with open('tuning_log_file.txt', 'a') as f:
-            for i in range(20):
-                # Check voltage at current state
-                nominal_capacitance_solid = self.tb_solid.current_capacitance_pF
-                nominal_capacitance_split = self.tb_split.current_capacitance_pF
+        
+        for i in range(20):
+            # Check voltage at current state
+            nominal_capacitance_solid = self.tb_solid.current_capacitance_pF
+            nominal_capacitance_split = self.tb_split.current_capacitance_pF
 
-                # Check voltage in all directions
-                test_settings = [
-                    # so, sp, vo
-                    (nominal_capacitance_solid, nominal_capacitance_split),
-                    (nominal_capacitance_solid+1, nominal_capacitance_split),
-                    (nominal_capacitance_solid, nominal_capacitance_split+1),
-                    (nominal_capacitance_solid-1, nominal_capacitance_split),
-                    (nominal_capacitance_solid, nominal_capacitance_split-1),
-                    (nominal_capacitance_solid+1, nominal_capacitance_split+1),
-                    (nominal_capacitance_solid+1, nominal_capacitance_split-1),
-                    (nominal_capacitance_solid-1, nominal_capacitance_split+1),
-                    (nominal_capacitance_solid-1, nominal_capacitance_split-1),
-                ]
+            # Check voltage in all directions
+            test_settings = [
+                # so, sp, vo
+                (nominal_capacitance_solid, nominal_capacitance_split),
+                (nominal_capacitance_solid+1, nominal_capacitance_split),
+                (nominal_capacitance_solid, nominal_capacitance_split+1),
+                (nominal_capacitance_solid-1, nominal_capacitance_split),
+                (nominal_capacitance_solid, nominal_capacitance_split-1),
+                (nominal_capacitance_solid+1, nominal_capacitance_split+1),
+                (nominal_capacitance_solid+1, nominal_capacitance_split-1),
+                (nominal_capacitance_solid-1, nominal_capacitance_split+1),
+                (nominal_capacitance_solid-1, nominal_capacitance_split-1),
+            ]
 
-                test_results = []
+            test_results = []
 
-                for so, sp in test_settings:
-                    self.tb_solid.set_capacitance(so) # Log if returns value that is not 0
-                    self.tb_split.set_capacitance(sp) # Log if returns value that is not 0
-                    self.wait_for_adc_settle_time()
-                    adc_read_val = self.read_voltage_solid() + self.read_voltage_split()
-                    test_results.append((so, sp, adc_read_val))
+            for so, sp in test_settings:
+                self.tb_solid.set_capacitance(so) # Log if returns value that is not 0
+                self.tb_split.set_capacitance(sp) # Log if returns value that is not 0
+                self.wait_for_adc_settle_time()
+                adc_read_val = self.read_voltage_solid() + self.read_voltage_split()
+                test_results.append((so, sp, adc_read_val))
+                with open('heartbeat.txt', 'w') as f:
+                    print(str(datetime.datetime.now()), file=f)
 
-                test_results.sort(key=lambda tup: tup[2])  # sort the values in ascending order of adc read val
+            test_results.sort(key=lambda tup: tup[2])  # sort the values in ascending order of adc read val
 
-                new_cap_solid = test_results[0][0]
-                new_cap_split = test_results[0][1]
-                min_volt_found = test_results[0][2]
+            new_cap_solid = test_results[0][0]
+            new_cap_split = test_results[0][1]
+            min_volt_found = test_results[0][2]
 
-                self.tb_solid.set_capacitance(new_cap_solid) # Log if returns value that is not 0
-                self.tb_split.set_capacitance(new_cap_split) # Log if returns value that is not 0
+            self.tb_solid.set_capacitance(new_cap_solid) # Log if returns value that is not 0
+            self.tb_split.set_capacitance(new_cap_split) # Log if returns value that is not 0
 
-                # Given set capacitance times of 50 mS, and read settle times of 50 mS, 
-                # this will update the heartbeat every ~1.5 seconds
-                with open('heartbeat.txt', 'w') as f1:
-                    print(str(datetime.datetime.now()), file=f1)
+            # Given set capacitance times of 50 mS, and read settle times of 50 mS, 
+            # this will update the heartbeat every ~1.5 seconds
 
+            with open('tuning_log_file.txt', 'a') as f:
                 print(str(new_cap_solid) +','+ str(new_cap_split) + ',' + str(min_volt_found), file=f)
 
         # Turn the Tuning LEDs to tuned
