@@ -203,7 +203,7 @@ class tuner():
         # and see if any direction decreases the voltage read, repeat 20 times
 
         write_to_log('Tuning HF system')
-        for i in range(10):
+        for i in range(20):
             # Check voltage at current state
             nominal_capacitance_solid = self.tb_solid.current_capacitance_pF
             nominal_capacitance_split = self.tb_split.current_capacitance_pF
