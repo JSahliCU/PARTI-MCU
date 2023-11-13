@@ -189,7 +189,7 @@ class tuner():
         return ret_val / NUMBER_OF_AVERAGES
 
     def wait_for_adc_settle_time(self):
-        time.sleep(5)
+        time.sleep(0.050)
 
     def tune(self):
         # Turn off the tuning LEDs while tuning
