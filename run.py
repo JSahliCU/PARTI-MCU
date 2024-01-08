@@ -91,10 +91,10 @@ class state_machine:
             self.transceiver = 'RX'
 
     def toggle_band(self):
-        if self.band == 'UHF':
-            self.band = 'HF'
-        else: # self.band == 'HF':
-            self.band = 'UHF'
+        # if self.band == 'UHF':
+        #     self.band = 'HF'
+        # else: # self.band == 'HF':
+        self.band = 'UHF'
 
     def run_current_state(self):
         # Reset all of the state lights
