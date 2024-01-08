@@ -52,17 +52,19 @@ sm.fam_go_control.set_HF_TX()
 sm.process = subprocess.Popen('exec python HF_TUNE.py', shell=True)
 time.sleep(10)
 
-sm.fam_go_control.set_HF_tune_amp()
 search_range = int(input('Enter tuning capacitance range: '))
-nominal_capacitance_solid = sm.tuner.tb_solid.current_capacitance_pF
-nominal_capacitance_split = sm.tuner.tb_split.current_capacitance_pF
+print(f'Nominal solid value: {0}'.format(sm.tuner.tb_solid.current_capacitance_pF))
+print(f'Nominal split value: {0}'.format(sm.tuner.tb_split.current_capacitance_pF))
+nominal_capacitance_solid = int(input('Enter starting solid loop capacitance'))
+nominal_capacitance_split = int(input('Enter starting split loop capacitance'))
+
+sm.fam_go_control.set_HF_pwr_amp()
+
 with open('HF_tune_convexity.csv', 'w') as f:
     print('Amplifier Voltage, Solid Capacitance, Split Capacitance, \
-            Immediate Reading Solid, Immediate Reading Split, Immediate Reading Combined, \
-            5 Second Reading Solid, 5 Second Reading Split, 5 Second Reading Combined,\
-            Vpp Solid, Vpp Split', file=f)
-
-    
+            Immediate Reading Solid, Immediate Reading Split, Immediate Reading Combined,', \
+            file=f)
+ 
     for solid_cap in range(nominal_capacitance_solid - search_range, nominal_capacitance_solid + search_range + 1):
         for split_cap in range(nominal_capacitance_split - search_range, nominal_capacitance_split + search_range + 1):
             
@@ -74,59 +76,14 @@ with open('HF_tune_convexity.csv', 'w') as f:
             
             print('Solid voltage read {0}, with cap = {1}'.format(immediate_reading_solid, sm.tuner.tb_solid.current_capacitance_pF))
             print('Split voltage read {0}, with cap = {1}'.format(immediate_reading_split, sm.tuner.tb_split.current_capacitance_pF))
-            
-            time.sleep(5)
-
-            delay_reading_solid = sm.tuner.read_voltage_solid()
-            delay_reading_split = sm.tuner.read_voltage_split()
-
-            vpp_solid = int(input('Enter the Vpp solid: '))
-            vpp_split = int(input('Enter the Vpp split: '))
-
-            print('5, {0}, {1}, \
-                {2}, {3}, {4},\
-                {5}, {6}, {7},\
-                {8}, {9}'.format(
-                    solid_cap, split_cap,
-                    immediate_reading_solid, immediate_reading_split, immediate_reading_solid + immediate_reading_split,
-                    delay_reading_solid, delay_reading_split, delay_reading_solid + delay_reading_split,
-                    vpp_solid, vpp_split
-                ), file=f)
-
-
-    sm.fam_go_control.reset_HF_tune_amp()
-
-    sm.fam_go_control.set_HF_pwr_amp()
-
-    for solid_cap in range(nominal_capacitance_solid - search_range, nominal_capacitance_solid + search_range + 1):
-        for split_cap in range(nominal_capacitance_split - search_range, nominal_capacitance_split + search_range + 1):
-            
-            sm.tuner.tb_solid.set_capacitance(solid_cap)
-            sm.tuner.tb_split.set_capacitance(split_cap)
-
-            immediate_reading_solid = sm.tuner.read_voltage_solid()
-            immediate_reading_split = sm.tuner.read_voltage_split()
-            
-            print('Solid voltage read {0}, with cap = {1}'.format(immediate_reading_solid, sm.tuner.tb_solid.current_capacitance_pF))
-            print('Split voltage read {0}, with cap = {1}'.format(immediate_reading_split, sm.tuner.tb_split.current_capacitance_pF))
-            
-            time.sleep(5)
-
-            delay_reading_solid = sm.tuner.read_voltage_solid()
-            delay_reading_split = sm.tuner.read_voltage_split()
-
-            vpp_solid = int(input('Enter the Vpp solid: '))
-            vpp_split = int(input('Enter the Vpp split: '))
 
             print('10, {0}, {1}, \
-                {2}, {3}, {4},\
-                {5}, {6}, {7},\
-                {8}, {9}'.format(
+                {2}, {3}, {4}'.format(
                     solid_cap, split_cap,
-                    immediate_reading_solid, immediate_reading_split, immediate_reading_solid + immediate_reading_split,
-                    delay_reading_solid, delay_reading_split, delay_reading_solid + delay_reading_split,
-                    vpp_solid, vpp_split
+                    immediate_reading_solid, immediate_reading_split, immediate_reading_solid + immediate_reading_split
                 ), file=f)
+            
+            input('Press Enter once you have saved the measurement')
 
 sm.fam_go_control.reset_HF_pwr_amp()
 
