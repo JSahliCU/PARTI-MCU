@@ -203,7 +203,49 @@ class tuner():
         # and see if any direction decreases the voltage read, repeat 20 times
 
         write_to_log('Tuning HF system')
-        for i in range(20):
+        
+        def cycle_light_every_n_cycles(i, n_cycles=5):
+            if i % n_cycles == 0:
+                light_state = not light_state
+                if light_state:
+                    GPIO.output(SOLID_LED, GPIO.HIGH)
+                    GPIO.output(SPLIT_LED, GPIO.HIGH)
+                else:
+                    GPIO.output(SOLID_LED, GPIO.LOW)
+                    GPIO.output(SPLIT_LED, GPIO.LOW)    
+
+                with open('heartbeat.txt', 'w') as f:
+                    print(str(datetime.datetime.now()), file=f)
+
+        # Brute force search for the correct capacitance value
+        # First on the solid loop
+        solid_cap_readings = []
+        self.tb_split.set_capacitance(0)
+        for solid_cap in range(79):
+            self.tb_solid.set_capacitance(solid_cap)
+            self.wait_for_adc_settle_time()
+            adc_read_val = self.read_voltage_solid()
+            solid_cap_readings.append((solid_cap, adc_read_val))
+            cycle_light_every_n_cycles(solid_cap)
+
+        # Then on the split loop
+        split_cap_readings = []
+        self.tb_solid.set_capacitance(0)
+        for split_cap in range(79):
+            self.tb_split.set_capacitance(split_cap)
+            self.wait_for_adc_settle_time()
+            adc_read_val = self.read_voltage_split()
+            split_cap_readings.append((split_cap, adc_read_val))
+            cycle_light_every_n_cycles(split_cap)
+        
+        # sort the values in ascending order of adc read val
+        solid_cap_readings.sort(key=lambda tup: tup[1])  
+        split_cap_readings.sort(key=lambda tup: tup[1])  
+
+        self.tb_solid.set_capacitance(solid_cap_readings[0][0])
+        self.tb_split.set_capacitance(split_cap_readings[0][0])
+        # Finally attempt to optimize the composite impedance value
+        for i in range(3):
             # Check voltage at current state
             nominal_capacitance_solid = self.tb_solid.current_capacitance_pF
             nominal_capacitance_split = self.tb_split.current_capacitance_pF
