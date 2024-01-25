@@ -269,6 +269,8 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(2000, 1/2000, 4000, 1)
         self.blocks_integrate_xx_0 = blocks.integrate_ff(int(agc_integration_const), 1)
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar()
+        self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_gr_complex*1, '/home/tbbg/rx_data_raw', False)
+        self.blocks_file_sink_0_0.set_unbuffered(False)
         self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, '/home/tbbg/rx_data', False)
         self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
@@ -324,6 +326,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.low_pass_filter_0, 0), (self.analog_fm_demod_cf_0, 0))
         self.connect((self.low_pass_filter_0, 0), (self.blocks_complex_to_float_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
+        self.connect((self.osmosdr_source_0, 0), (self.blocks_file_sink_0_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.low_pass_filter_0, 0))
 
 

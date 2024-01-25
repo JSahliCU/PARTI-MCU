@@ -25,6 +25,10 @@ GPIO.output(20, GPIO.LOW)
 while True:
     # Update the SM state
     mode = input('Enter transceiver mode, 1 = HF TX, 2 = HF RX, 3 = UHF TX, 4 = UHF RX: ')
+    if sm.transceiver == 'RX':
+        sm.to_rename_rx_data = '/home/tbbg/rx_data_' + sm.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S')
+        sm.to_rename_rx_data_raw ='/home/tbbg/rx_data_raw' + sm.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S')
+
     if mode == 'q' or mode == 'quit()':
         break
     mode = int(mode)
