@@ -17,6 +17,8 @@ heartbeat_interval = 30 # seconds
 amp_turn_on_wait = 10 # seconds
 wait_for_gnu_radio_to_close = 2 # seconds
 
+serial_number_file_location = '/home/tbbg/serial_number'
+
 class state_machine:
     def __init__(self, tune_enable = True):
         self.tune_enable=tune_enable
@@ -32,6 +34,9 @@ class state_machine:
                 self.transceiver = 'TX'
             else:
                 throw_error('boot.txt file contains invalid state')
+
+        with open(serial_number_file_location, 'r') as f:
+            self.serial_number = f.read()
 
         self.boot_transceiver = self.transceiver
 
@@ -77,8 +82,10 @@ class state_machine:
         # file with the current band, and timestamp information
 
         if self.transceiver == 'RX':
-            self.to_rename_rx_data = '/home/tbbg/rx_data_' + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S')
-            self.to_rename_rx_data_raw ='/home/tbbg/rx_data_raw' + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S')
+            self.to_rename_rx_data = '/home/tbbg/rx_data_' + self.serial_number + '_' \
+                + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S')
+            self.to_rename_rx_data_raw ='/home/tbbg/rx_data_raw_' + self.serial_number + '_' \
+                  + self.band + datetime.datetime.now().strftime('%y%m%dT%H%M%S')
 
         if self.transceiver != self.boot_transceiver:
             self.toggle_band()
