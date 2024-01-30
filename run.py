@@ -36,7 +36,7 @@ class state_machine:
                 throw_error('boot.txt file contains invalid state')
 
         with open(serial_number_file_location, 'r') as f:
-            self.serial_number = f.read()
+            self.serial_number = f.read(1)
 
         self.boot_transceiver = self.transceiver
 
