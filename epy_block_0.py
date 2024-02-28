@@ -78,20 +78,27 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     log_file = 'gain_log.csv'
 
     def __init__(self, 
-                 max_input_level=0.9, min_input_level=0.1, update_period=0.5, auto_log_time_min=15,
-                 callback_rf_gain=None, callback_if_gain=None, callback_bb_gain=None):  # only default arguments here
+                 max_input_level=0.9, min_input_level=0.1, update_period=0.5, delay_between_settings=0.1, auto_log_time_min=15,
+                 ratio_of_freq_change_to_diff=0.9, freq_offset_limit=2e3,
+                 callback_rf_gain=None, callback_if_gain=None, callback_bb_gain=None,
+                 symbol_delta_f = None,
+                 callback_set_freq=None, callback_get_freq_0=None,
+                 callback_get_freq=None, callback_set_symbol_rate=None, callback_get_symbol_rate_0=None):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
         gr.sync_block.__init__(
             self,
-            name='Embedded Python Block',   # will show up in GRC
-            in_sig=[np.float32],
+            name='Hack RF Setting Adjustment',   # will show up in GRC
+            in_sig=[np.float32, np.float32],
             out_sig=[]
         )
         # if an attribute with the same name as a parameter is found,
         # a callback is registered (properties work, too).
         self.max_input_level = max_input_level
         self.min_input_level = min_input_level
+        
         self.update_period = update_period
+        self.delay_between_settings = delay_between_settings
+        
         self.callback_rf_gain = callback_rf_gain
         self.callback_if_gain = callback_if_gain
         self.callback_bb_gain = callback_bb_gain
@@ -100,6 +107,17 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.log_index = 0
         self.auto_log_time_min = auto_log_time_min
         self.log_index_limit = 60 * auto_log_time_min / update_period
+
+        # if an attribute with the same name as a parameter is found,s
+        self.ratio_of_freq_change_to_diff = ratio_of_freq_change_to_diff
+        self.freq_offset_limit = freq_offset_limit
+        self.symbol_delta_f = symbol_delta_f
+        # a callback is registered (properties work, too).
+        self.callback_set_freq = callback_set_freq
+        self.callback_get_freq_0 = callback_get_freq_0
+        self.callback_get_freq = callback_get_freq
+        self.callback_set_symbol_rate = callback_set_symbol_rate
+        self.callback_get_symbol_rate_0 = callback_get_symbol_rate_0
 
         import os
         cwd = os.getcwd()
@@ -116,16 +134,16 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
                 bb_gain = gain_table_tuple[2]
                 log_msg = ','.join(
                     map(str, 
-                        [input_items[-1][-1], rf_gain, if_gain, bb_gain]
+                        [input_items[0][-1], rf_gain, if_gain, bb_gain]
                     )
                 )
                 print(str(datetime.datetime.now()) + "UTC " + log_msg, file=f)
 
-        if input_items[-1][-1] > (self.max_input_level):
+        if input_items[0][-1] > (self.max_input_level):
             log()
             self.decrease_gain()
 
-        if input_items[-1][-1] < (self.min_input_level):
+        if input_items[0][-1] < (self.min_input_level):
             log()
             self.increase_gain() 
         
@@ -135,8 +153,36 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             self.log_index += 1
         #output_items[0][:] = input_items[0] * self.example_param
         
-        time.sleep(self.update_period)
+        time.sleep(self.delay_between_settings)
+        
+        #self.update_frequency_setting(input_items)
+        
+        time.sleep(self.update_period - self.delay_between_settings)
         return 0 #len(output_items[0])
+
+    def update_frequency_setting(self, input_items):
+        # calculate how much we should adjust the frequency
+        diff_in_abs_f = (np.abs(input_items[1][-1]) * self.symbol_delta_f)
+        # apply the damping term
+        freq_change_to_do = diff_in_abs_f * self.ratio_of_freq_change_to_diff
+        
+        # calculate which way to move the frequency (inc or dec)
+        sign = np.sign(input_items[1][-1])
+        freq = self.callback_get_freq()
+        freq += sign * freq_change_to_do
+        
+        # if the proposed change goes past the freq_offset_limit, then set the change to the freq_offset_limit
+        freq_0 = self.callback_get_freq_0()
+        if np.abs(freq - freq_0) > self.freq_offset_limit:
+            freq = self.callback_get_freq_0 + sign * self.freq_offset_limit
+        
+        # update the hackrf freq
+        self.callback_set_freq(freq)
+
+        # update the symbol rate
+        absolute_symbol_rate = self.callback_get_symbol_rate_0()
+        symbol_rate_update = self.callback_get_symbol_rate_0() * (freq / freq_0)
+        self.callback_set_symbol_rate(symbol_rate_update)
 
     def check_gain_table_index_limits(self):
         if self.gain_table_index < 0:

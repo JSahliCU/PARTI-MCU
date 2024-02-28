@@ -85,27 +85,51 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.bps = bps = 1e3
         self.M = M = 2
         self.samp_rate = samp_rate = (int) (5e5)
+        self.baud_rate = baud_rate = bps * 2 / M
+        self.samp_per_symbol = samp_per_symbol = samp_rate * (1 / baud_rate)
         self.rf_gain = rf_gain = 0
         self.packet_bits = packet_bits = 108
         self.if_gain = if_gain = 16
         self.header_bits = header_bits = 8
+        self.freq = freq = 413e6
         self.delta_f = delta_f = 1.1 * bps
         self.bb_gain = bb_gain = 16
-        self.baud_rate = baud_rate = bps * 2 / M
-        self.samp_per_symbol = samp_per_symbol = (int)(samp_rate * (1 / baud_rate))
+        self.samp_per_symbol_display = samp_per_symbol_display = samp_per_symbol
         self.samp_per_bit = samp_per_bit = (int)(samp_rate * (1 / bps))
         self.rf_gain_display = rf_gain_display = rf_gain
         self.payload_bits = payload_bits = packet_bits - header_bits
         self.if_gain_display = if_gain_display = if_gain
-        self.freq = freq = 413e6 - 2e3
+        self.freq_display = freq_display = freq
+        self.freq_0 = freq_0 = 413e6
         self.demod_offset = demod_offset = 1e3
         self.bb_gain_display = bb_gain_display = bb_gain
+        self.baud_rate_display = baud_rate_display = baud_rate
+        self.baud_rate_0 = baud_rate_0 = bps * 2 / M
         self.bandwidth = bandwidth = M * delta_f
         self.agc_integration_const = agc_integration_const = 2e5
 
         ##################################################
         # Blocks
         ##################################################
+        self._samp_per_symbol_display_tool_bar = Qt.QToolBar(self)
+
+        if None:
+            self._samp_per_symbol_display_formatter = None
+        else:
+            self._samp_per_symbol_display_formatter = lambda x: eng_notation.num_to_str(x)
+
+        self._samp_per_symbol_display_tool_bar.addWidget(Qt.QLabel('samp_per_symbol_display' + ": "))
+        self._samp_per_symbol_display_label = Qt.QLabel(str(self._samp_per_symbol_display_formatter(self.samp_per_symbol_display)))
+        self._samp_per_symbol_display_tool_bar.addWidget(self._samp_per_symbol_display_label)
+        self.top_grid_layout.addWidget(self._samp_per_symbol_display_tool_bar)
+        self.root_raised_cosine_filter_0 = filter.fir_filter_fff(
+            1,
+            firdes.root_raised_cosine(
+                1,
+                samp_rate,
+                baud_rate,
+                0.35,
+                (int) (1e3)))
         self._rf_gain_display_tool_bar = Qt.QToolBar(self)
 
         if None:
@@ -137,11 +161,11 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0_0.enable_stem_plot(False)
 
 
-        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+        labels = ['I', 'FM Demod', 'Q', 'Signal 4', 'Signal 5',
             'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
-        colors = ['blue', 'red', 'green', 'black', 'cyan',
+        colors = ['blue', 'dark blue', 'green', 'black', 'cyan',
             'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
         alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
             1.0, 1.0, 1.0, 1.0, 1.0]
@@ -246,7 +270,18 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self._if_gain_display_label = Qt.QLabel(str(self._if_gain_display_formatter(self.if_gain_display)))
         self._if_gain_display_tool_bar.addWidget(self._if_gain_display_label)
         self.top_grid_layout.addWidget(self._if_gain_display_tool_bar)
-        self.epy_block_0 = epy_block_0.blk(max_input_level=0.8, min_input_level=0.1, update_period=0.5, auto_log_time_min=15, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain)
+        self._freq_display_tool_bar = Qt.QToolBar(self)
+
+        if None:
+            self._freq_display_formatter = None
+        else:
+            self._freq_display_formatter = lambda x: eng_notation.num_to_str(x)
+
+        self._freq_display_tool_bar.addWidget(Qt.QLabel('freq_display' + ": "))
+        self._freq_display_label = Qt.QLabel(str(self._freq_display_formatter(self.freq_display)))
+        self._freq_display_tool_bar.addWidget(self._freq_display_label)
+        self.top_grid_layout.addWidget(self._freq_display_tool_bar)
+        self.epy_block_0 = epy_block_0.blk(max_input_level=0.8, min_input_level=0.1, update_period=0.5, delay_between_settings=0.25, auto_log_time_min=15, ratio_of_freq_change_to_diff=0.1, freq_offset_limit=10e3, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain, symbol_delta_f=delta_f, callback_set_freq=self.set_freq, callback_get_freq_0=self.get_freq_0, callback_get_freq=self.get_freq, callback_set_symbol_rate=self.set_baud_rate, callback_get_symbol_rate_0=self.get_baud_rate_0)
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_ff(
             digital.TED_SIGNAL_TIMES_SLOPE_ML,
             samp_per_symbol,
@@ -265,8 +300,10 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.blocks_repeat_0_0_1 = blocks.repeat(gr.sizeof_float*1, 10)
         self.blocks_repeat_0_0_0 = blocks.repeat(gr.sizeof_float*1, 10)
         self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_float*1, 10)
+        self.blocks_multiply_const_vxx_1_0_0_0 = blocks.multiply_const_ff(1/(agc_integration_const))
         self.blocks_multiply_const_vxx_1_0_0 = blocks.multiply_const_ff(1/(agc_integration_const))
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(2000, 1/2000, 4000, 1)
+        self.blocks_integrate_xx_0_0 = blocks.integrate_ff(int(agc_integration_const), 1)
         self.blocks_integrate_xx_0 = blocks.integrate_ff(int(agc_integration_const), 1)
         self.blocks_float_to_uchar_0 = blocks.float_to_uchar()
         self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_gr_complex*1, '/home/tbbg/rx_data_raw', False)
@@ -287,6 +324,17 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self._bb_gain_display_label = Qt.QLabel(str(self._bb_gain_display_formatter(self.bb_gain_display)))
         self._bb_gain_display_tool_bar.addWidget(self._bb_gain_display_label)
         self.top_grid_layout.addWidget(self._bb_gain_display_tool_bar)
+        self._baud_rate_display_tool_bar = Qt.QToolBar(self)
+
+        if None:
+            self._baud_rate_display_formatter = None
+        else:
+            self._baud_rate_display_formatter = lambda x: eng_notation.num_to_str(x)
+
+        self._baud_rate_display_tool_bar.addWidget(Qt.QLabel('baud_rate_display' + ": "))
+        self._baud_rate_display_label = Qt.QLabel(str(self._baud_rate_display_formatter(self.baud_rate_display)))
+        self._baud_rate_display_tool_bar.addWidget(self._baud_rate_display_label)
+        self.top_grid_layout.addWidget(self._baud_rate_display_tool_bar)
         self.analog_fm_demod_cf_0 = analog.fm_demod_cf(
         	channel_rate=samp_rate,
         	audio_decim=1,
@@ -302,8 +350,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_fm_demod_cf_0, 0), (self.digital_symbol_sync_xx_0, 0))
-        self.connect((self.analog_fm_demod_cf_0, 0), (self.qtgui_time_sink_x_0_0, 1))
+        self.connect((self.analog_fm_demod_cf_0, 0), (self.root_raised_cosine_filter_0, 0))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_repeat_0_0, 0))
         self.connect((self.blocks_complex_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
@@ -312,8 +359,10 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_uchar_to_float_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))
         self.connect((self.blocks_integrate_xx_0, 0), (self.blocks_multiply_const_vxx_1_0_0, 0))
+        self.connect((self.blocks_integrate_xx_0_0, 0), (self.blocks_multiply_const_vxx_1_0_0_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_sub_xx_0, 1))
         self.connect((self.blocks_multiply_const_vxx_1_0_0, 0), (self.epy_block_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_1_0_0_0, 0), (self.epy_block_0, 1))
         self.connect((self.blocks_repeat_0_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_repeat_0_0_0, 0), (self.qtgui_time_sink_x_0, 1))
         self.connect((self.blocks_repeat_0_0_1, 0), (self.qtgui_time_sink_x_0, 2))
@@ -328,6 +377,9 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.osmosdr_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.blocks_file_sink_0_0, 0))
         self.connect((self.osmosdr_source_0, 0), (self.low_pass_filter_0, 0))
+        self.connect((self.root_raised_cosine_filter_0, 0), (self.blocks_integrate_xx_0_0, 0))
+        self.connect((self.root_raised_cosine_filter_0, 0), (self.digital_symbol_sync_xx_0, 0))
+        self.connect((self.root_raised_cosine_filter_0, 0), (self.qtgui_time_sink_x_0_0, 1))
 
 
     def closeEvent(self, event):
@@ -348,6 +400,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
     def set_bps(self, bps):
         self.bps = bps
         self.set_baud_rate(self.bps * 2 / self.M)
+        self.set_baud_rate_0(self.bps * 2 / self.M)
         self.set_delta_f(1.1 * self.bps)
         self.set_samp_per_bit((int)(self.samp_rate * (1 / self.bps)))
 
@@ -358,6 +411,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.M = M
         self.set_bandwidth(self.M * self.delta_f)
         self.set_baud_rate(self.bps * 2 / self.M)
+        self.set_baud_rate_0(self.bps * 2 / self.M)
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -365,11 +419,29 @@ class UHF_RX(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.set_samp_per_bit((int)(self.samp_rate * (1 / self.bps)))
-        self.set_samp_per_symbol((int)(self.samp_rate * (1 / self.baud_rate)))
+        self.set_samp_per_symbol(self.samp_rate * (1 / self.baud_rate))
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 10e3, 3e3, firdes.WIN_HAMMING, 6.76))
         self.osmosdr_source_0.set_sample_rate(self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(10 * self.samp_rate / self.baud_rate)
         self.qtgui_time_sink_x_0_0.set_samp_rate(self.samp_rate )
+        self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, self.baud_rate, 0.35, (int) (1e3)))
+
+    def get_baud_rate(self):
+        return self.baud_rate
+
+    def set_baud_rate(self, baud_rate):
+        self.baud_rate = baud_rate
+        self.set_baud_rate_display(self._baud_rate_display_formatter(self.baud_rate))
+        self.set_samp_per_symbol(self.samp_rate * (1 / self.baud_rate))
+        self.qtgui_time_sink_x_0.set_samp_rate(10 * self.samp_rate / self.baud_rate)
+        self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, self.baud_rate, 0.35, (int) (1e3)))
+
+    def get_samp_per_symbol(self):
+        return self.samp_per_symbol
+
+    def set_samp_per_symbol(self, samp_per_symbol):
+        self.samp_per_symbol = samp_per_symbol
+        self.set_samp_per_symbol_display(self._samp_per_symbol_display_formatter(self.samp_per_symbol))
 
     def get_rf_gain(self):
         return self.rf_gain
@@ -401,12 +473,21 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.header_bits = header_bits
         self.set_payload_bits(self.packet_bits - self.header_bits)
 
+    def get_freq(self):
+        return self.freq
+
+    def set_freq(self, freq):
+        self.freq = freq
+        self.set_freq_display(self._freq_display_formatter(self.freq))
+        self.osmosdr_source_0.set_center_freq(self.freq, 0)
+
     def get_delta_f(self):
         return self.delta_f
 
     def set_delta_f(self, delta_f):
         self.delta_f = delta_f
         self.set_bandwidth(self.M * self.delta_f)
+        self.epy_block_0.symbol_delta_f = self.delta_f
 
     def get_bb_gain(self):
         return self.bb_gain
@@ -416,19 +497,12 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.set_bb_gain_display(self._bb_gain_display_formatter(self.bb_gain))
         self.osmosdr_source_0.set_bb_gain(self.bb_gain, 0)
 
-    def get_baud_rate(self):
-        return self.baud_rate
+    def get_samp_per_symbol_display(self):
+        return self.samp_per_symbol_display
 
-    def set_baud_rate(self, baud_rate):
-        self.baud_rate = baud_rate
-        self.set_samp_per_symbol((int)(self.samp_rate * (1 / self.baud_rate)))
-        self.qtgui_time_sink_x_0.set_samp_rate(10 * self.samp_rate / self.baud_rate)
-
-    def get_samp_per_symbol(self):
-        return self.samp_per_symbol
-
-    def set_samp_per_symbol(self, samp_per_symbol):
-        self.samp_per_symbol = samp_per_symbol
+    def set_samp_per_symbol_display(self, samp_per_symbol_display):
+        self.samp_per_symbol_display = samp_per_symbol_display
+        Qt.QMetaObject.invokeMethod(self._samp_per_symbol_display_label, "setText", Qt.Q_ARG("QString", self.samp_per_symbol_display))
 
     def get_samp_per_bit(self):
         return self.samp_per_bit
@@ -456,12 +530,18 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.if_gain_display = if_gain_display
         Qt.QMetaObject.invokeMethod(self._if_gain_display_label, "setText", Qt.Q_ARG("QString", self.if_gain_display))
 
-    def get_freq(self):
-        return self.freq
+    def get_freq_display(self):
+        return self.freq_display
 
-    def set_freq(self, freq):
-        self.freq = freq
-        self.osmosdr_source_0.set_center_freq(self.freq, 0)
+    def set_freq_display(self, freq_display):
+        self.freq_display = freq_display
+        Qt.QMetaObject.invokeMethod(self._freq_display_label, "setText", Qt.Q_ARG("QString", self.freq_display))
+
+    def get_freq_0(self):
+        return self.freq_0
+
+    def set_freq_0(self, freq_0):
+        self.freq_0 = freq_0
 
     def get_demod_offset(self):
         return self.demod_offset
@@ -477,6 +557,19 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.bb_gain_display = bb_gain_display
         Qt.QMetaObject.invokeMethod(self._bb_gain_display_label, "setText", Qt.Q_ARG("QString", self.bb_gain_display))
 
+    def get_baud_rate_display(self):
+        return self.baud_rate_display
+
+    def set_baud_rate_display(self, baud_rate_display):
+        self.baud_rate_display = baud_rate_display
+        Qt.QMetaObject.invokeMethod(self._baud_rate_display_label, "setText", Qt.Q_ARG("QString", self.baud_rate_display))
+
+    def get_baud_rate_0(self):
+        return self.baud_rate_0
+
+    def set_baud_rate_0(self, baud_rate_0):
+        self.baud_rate_0 = baud_rate_0
+
     def get_bandwidth(self):
         return self.bandwidth
 
@@ -490,6 +583,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
     def set_agc_integration_const(self, agc_integration_const):
         self.agc_integration_const = agc_integration_const
         self.blocks_multiply_const_vxx_1_0_0.set_k(1/(self.agc_integration_const))
+        self.blocks_multiply_const_vxx_1_0_0_0.set_k(1/(self.agc_integration_const))
 
 
 
