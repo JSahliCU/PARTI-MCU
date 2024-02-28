@@ -57,17 +57,35 @@ blocks:
     rotation: 0
     state: enabled
 - name: baud_rate
-  id: variable
+  id: variable_qtgui_chooser
   parameters:
     comment: ''
-    value: bps * 2 / M
+    gui_hint: ''
+    label: Symbol Rate
+    label0: 1 kbps
+    label1: 10 kbps
+    label2: 100 kbps
+    label3: ''
+    label4: ''
+    labels: '[]'
+    num_opts: '3'
+    option0: '1000'
+    option1: '10000'
+    option2: '100000'
+    option3: '3'
+    option4: '4'
+    options: '[0, 1, 2]'
+    orient: Qt.QHBoxLayout
+    type: int
+    value: '1000'
+    widget: radio_buttons
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [478, 14]
+    coordinate: [1200, 124.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: bb_gain
   id: variable
   parameters:
@@ -77,7 +95,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1100, 33]
+    coordinate: [1200, 20.0]
     rotation: 0
     state: enabled
 - name: bps
@@ -141,17 +159,26 @@ blocks:
     rotation: 0
     state: enabled
 - name: if_gain
-  id: variable
+  id: variable_qtgui_range
   parameters:
     comment: ''
+    gui_hint: ''
+    label: ''
+    min_len: '200'
+    orient: Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '1'
+    stop: '28'
     value: '28'
+    widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1001, 31]
+    coordinate: [1080, 20.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: packet_bits
   id: variable
   parameters:
@@ -177,17 +204,26 @@ blocks:
     rotation: 0
     state: enabled
 - name: rf_gain
-  id: variable
+  id: variable_qtgui_range
   parameters:
     comment: ''
+    gui_hint: ''
+    label: ''
+    min_len: '200'
+    orient: Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '1'
+    stop: '14'
     value: '14'
+    widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [922, 35]
+    coordinate: [952, 20.0]
     rotation: 0
-    state: enabled
+    state: true
 - name: samp_per_bit
   id: variable
   parameters:
