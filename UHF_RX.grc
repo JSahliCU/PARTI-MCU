@@ -396,6 +396,24 @@ blocks:
     coordinate: [1327, 378]
     rotation: 0
     state: true
+- name: blocks_add_const_vxx_0_0_0
+  id: blocks_add_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [736, 764.0]
+    rotation: 0
+    state: true
 - name: blocks_complex_to_float_0
   id: blocks_complex_to_float
   parameters:
@@ -568,7 +586,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 716.0]
+    coordinate: [648, 684.0]
     rotation: 0
     state: true
 - name: blocks_repeat_0_0
@@ -758,49 +776,51 @@ blocks:
       \ update_period=0.5, delay_between_settings=0.1, auto_log_time_min=15,\n   \
       \              ratio_of_freq_change_to_diff=0.9, freq_offset_limit=2e3,\n  \
       \               callback_rf_gain=None, callback_if_gain=None, callback_bb_gain=None,\n\
-      \                 symbol_delta_f = None,\n                 callback_set_freq=None,\
-      \ callback_get_freq_0=None,\n                 callback_get_freq=None, callback_set_symbol_rate=None,\
-      \ callback_get_symbol_rate_0=None):  # only default arguments here\n       \
-      \ \"\"\"arguments to this function show up as parameters in GRC\"\"\"\n    \
-      \    gr.sync_block.__init__(\n            self,\n            name='Hack RF Setting\
-      \ Adjustment',   # will show up in GRC\n            in_sig=[np.float32, np.float32],\n\
-      \            out_sig=[]\n        )\n        # if an attribute with the same\
-      \ name as a parameter is found,\n        # a callback is registered (properties\
-      \ work, too).\n        self.max_input_level = max_input_level\n        self.min_input_level\
-      \ = min_input_level\n        \n        self.update_period = update_period\n\
-      \        self.delay_between_settings = delay_between_settings\n        \n  \
-      \      self.callback_rf_gain = callback_rf_gain\n        self.callback_if_gain\
-      \ = callback_if_gain\n        self.callback_bb_gain = callback_bb_gain\n\n \
-      \       self.gain_table_index = 8\n        self.log_index = 0\n        self.auto_log_time_min\
-      \ = auto_log_time_min\n        self.log_index_limit = 60 * auto_log_time_min\
-      \ / update_period\n\n        # if an attribute with the same name as a parameter\
-      \ is found,s\n        self.ratio_of_freq_change_to_diff = ratio_of_freq_change_to_diff\n\
-      \        self.freq_offset_limit = freq_offset_limit\n        self.symbol_delta_f\
-      \ = symbol_delta_f\n        # a callback is registered (properties work, too).\n\
-      \        self.callback_set_freq = callback_set_freq\n        self.callback_get_freq_0\
-      \ = callback_get_freq_0\n        self.callback_get_freq = callback_get_freq\n\
-      \        self.callback_set_symbol_rate = callback_set_symbol_rate\n        self.callback_get_symbol_rate_0\
-      \ = callback_get_symbol_rate_0\n\n        import os\n        cwd = os.getcwd()\n\
-      \        print(cwd)\n\n    def work(self, input_items, output_items):\n    \
-      \    \"\"\"example: multiply with constant\"\"\"\n        \n        def log():\n\
-      \            with open(blk.log_file, mode='+a') as f:\n                gain_table_tuple\
-      \ = blk.gain_table[self.gain_table_index]\n                rf_gain = gain_table_tuple[0]\n\
-      \                if_gain = gain_table_tuple[1]\n                bb_gain = gain_table_tuple[2]\n\
+      \                 symbol_delta_f = None, demod_offset = None,\n            \
+      \     callback_set_freq=None, callback_get_freq_0=None,\n                 callback_get_freq=None,\
+      \ callback_set_symbol_rate=None, callback_get_symbol_rate_0=None):  # only default\
+      \ arguments here\n        \"\"\"arguments to this function show up as parameters\
+      \ in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n       \
+      \     name='Hack RF Setting Adjustment',   # will show up in GRC\n         \
+      \   in_sig=[np.float32, np.float32],\n            out_sig=[]\n        )\n  \
+      \      # if an attribute with the same name as a parameter is found,\n     \
+      \   # a callback is registered (properties work, too).\n        self.max_input_level\
+      \ = max_input_level\n        self.min_input_level = min_input_level\n      \
+      \  \n        self.update_period = update_period\n        self.delay_between_settings\
+      \ = delay_between_settings\n        \n        self.callback_rf_gain = callback_rf_gain\n\
+      \        self.callback_if_gain = callback_if_gain\n        self.callback_bb_gain\
+      \ = callback_bb_gain\n\n        self.gain_table_index = 8\n        self.log_index\
+      \ = 0\n        self.auto_log_time_min = auto_log_time_min\n        self.log_index_limit\
+      \ = 60 * auto_log_time_min / update_period\n\n        # if an attribute with\
+      \ the same name as a parameter is found,s\n        self.ratio_of_freq_change_to_diff\
+      \ = ratio_of_freq_change_to_diff\n        self.freq_offset_limit = freq_offset_limit\n\
+      \        self.demod_offset = demod_offset\n        self.symbol_delta_f = symbol_delta_f\n\
+      \        # a callback is registered (properties work, too).\n        self.callback_set_freq\
+      \ = callback_set_freq\n        self.callback_get_freq_0 = callback_get_freq_0\n\
+      \        self.callback_get_freq = callback_get_freq\n        self.callback_set_symbol_rate\
+      \ = callback_set_symbol_rate\n        self.callback_get_symbol_rate_0 = callback_get_symbol_rate_0\n\
+      \n        import os\n        cwd = os.getcwd()\n        print(cwd)\n\n    def\
+      \ work(self, input_items, output_items):\n        \"\"\"example: multiply with\
+      \ constant\"\"\"\n        \n        def log():\n            with open(blk.log_file,\
+      \ mode='+a') as f:\n                gain_table_tuple = blk.gain_table[self.gain_table_index]\n\
+      \                rf_gain = gain_table_tuple[0]\n                if_gain = gain_table_tuple[1]\n\
+      \                bb_gain = gain_table_tuple[2]\n                freq = self.callback_get_freq()\n\
       \                log_msg = ','.join(\n                    map(str, \n      \
-      \                  [input_items[0][-1], rf_gain, if_gain, bb_gain]\n       \
-      \             )\n                )\n                print(str(datetime.datetime.now())\
+      \                  [input_items[0][-1], rf_gain, if_gain, bb_gain, freq]\n \
+      \                   )\n                )\n                print(str(datetime.datetime.now())\
       \ + \"UTC \" + log_msg, file=f)\n\n        if input_items[0][-1] > (self.max_input_level):\n\
       \            log()\n            self.decrease_gain()\n\n        if input_items[0][-1]\
       \ < (self.min_input_level):\n            log()\n            self.increase_gain()\
       \ \n        \n        if self.log_index >= self.log_index_limit:\n         \
       \   log()\n        else:\n            self.log_index += 1\n        #output_items[0][:]\
       \ = input_items[0] * self.example_param\n        \n        time.sleep(self.delay_between_settings)\n\
-      \        \n        #self.update_frequency_setting(input_items)\n        \n \
-      \       time.sleep(self.update_period - self.delay_between_settings)\n     \
-      \   return 0 #len(output_items[0])\n\n    def update_frequency_setting(self,\
-      \ input_items):\n        # calculate how much we should adjust the frequency\n\
-      \        diff_in_abs_f = (np.abs(input_items[1][-1]) * self.symbol_delta_f)\n\
-      \        # apply the damping term\n        freq_change_to_do = diff_in_abs_f\
+      \        \n        self.update_frequency_setting(input_items)\n        \n  \
+      \      time.sleep(self.update_period - self.delay_between_settings)\n      \
+      \  return 0 #len(output_items[0])\n\n    def update_frequency_setting(self,\
+      \ input_items):\n        #input_freq_data = input_items[1][-1] - self.demod_offset\n\
+      \        \n        # calculate how much we should adjust the frequency\n   \
+      \     diff_in_abs_f = (np.abs(input_items[1][-1]) * self.symbol_delta_f)\n \
+      \       # apply the damping term\n        freq_change_to_do = diff_in_abs_f\
       \ * self.ratio_of_freq_change_to_diff\n        \n        # calculate which way\
       \ to move the frequency (inc or dec)\n        sign = np.sign(input_items[1][-1])\n\
       \        freq = self.callback_get_freq()\n        freq += sign * freq_change_to_do\n\
@@ -809,9 +829,9 @@ blocks:
       \        if np.abs(freq - freq_0) > self.freq_offset_limit:\n            freq\
       \ = self.callback_get_freq_0 + sign * self.freq_offset_limit\n        \n   \
       \     # update the hackrf freq\n        self.callback_set_freq(freq)\n\n   \
-      \     # update the symbol rate\n        absolute_symbol_rate = self.callback_get_symbol_rate_0()\n\
-      \        symbol_rate_update = self.callback_get_symbol_rate_0() * (freq / freq_0)\n\
-      \        self.callback_set_symbol_rate(symbol_rate_update)\n\n    def check_gain_table_index_limits(self):\n\
+      \     # update the symbol rate\n        #absolute_symbol_rate = self.callback_get_symbol_rate_0()\n\
+      \        #symbol_rate_update = self.callback_get_symbol_rate_0() * (freq / freq_0)\n\
+      \        #self.callback_set_symbol_rate(symbol_rate_update)\n\n    def check_gain_table_index_limits(self):\n\
       \        if self.gain_table_index < 0:\n            self.gain_table_index =\
       \ 0\n        \n        if self.gain_table_index >= len(blk.gain_table):\n  \
       \          self.gain_table_index = len(blk.gain_table) - 1\n\n    def set_gain_from_gain_table(self):\n\
@@ -836,7 +856,8 @@ blocks:
     callback_set_symbol_rate: self.set_baud_rate
     comment: ''
     delay_between_settings: '0.25'
-    freq_offset_limit: 10e3
+    demod_offset: demod_offset
+    freq_offset_limit: 15e3
     max_input_level: '0.8'
     maxoutbuf: '0'
     min_input_level: '0.1'
@@ -849,14 +870,15 @@ blocks:
       ('min_input_level', '0.1'), ('update_period', '0.5'), ('delay_between_settings',
       '0.1'), ('auto_log_time_min', '15'), ('ratio_of_freq_change_to_diff', '0.9'),
       ('freq_offset_limit', '2000.0'), ('callback_rf_gain', 'None'), ('callback_if_gain',
-      'None'), ('callback_bb_gain', 'None'), ('symbol_delta_f', 'None'), ('callback_set_freq',
-      'None'), ('callback_get_freq_0', 'None'), ('callback_get_freq', 'None'), ('callback_set_symbol_rate',
-      'None'), ('callback_get_symbol_rate_0', 'None')], [('0', 'float', 1), ('1',
-      'float', 1)], [], 'arguments to this function show up as parameters in GRC',
-      ['auto_log_time_min', 'callback_bb_gain', 'callback_get_freq', 'callback_get_freq_0',
-      'callback_get_symbol_rate_0', 'callback_if_gain', 'callback_rf_gain', 'callback_set_freq',
-      'callback_set_symbol_rate', 'delay_between_settings', 'freq_offset_limit', 'max_input_level',
-      'min_input_level', 'ratio_of_freq_change_to_diff', 'symbol_delta_f', 'update_period'])
+      'None'), ('callback_bb_gain', 'None'), ('symbol_delta_f', 'None'), ('demod_offset',
+      'None'), ('callback_set_freq', 'None'), ('callback_get_freq_0', 'None'), ('callback_get_freq',
+      'None'), ('callback_set_symbol_rate', 'None'), ('callback_get_symbol_rate_0',
+      'None')], [('0', 'float', 1), ('1', 'float', 1)], [], 'arguments to this function
+      show up as parameters in GRC', ['auto_log_time_min', 'callback_bb_gain', 'callback_get_freq',
+      'callback_get_freq_0', 'callback_get_symbol_rate_0', 'callback_if_gain', 'callback_rf_gain',
+      'callback_set_freq', 'callback_set_symbol_rate', 'delay_between_settings', 'demod_offset',
+      'freq_offset_limit', 'max_input_level', 'min_input_level', 'ratio_of_freq_change_to_diff',
+      'symbol_delta_f', 'update_period'])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -1535,6 +1557,7 @@ connections:
 - [analog_fm_demod_cf_0, '0', root_raised_cosine_filter_0, '0']
 - [blocks_add_const_vxx_0_0, '0', blocks_float_to_uchar_0, '0']
 - [blocks_add_const_vxx_0_0, '0', blocks_repeat_0_0, '0']
+- [blocks_add_const_vxx_0_0_0, '0', epy_block_0, '1']
 - [blocks_complex_to_float_0, '0', qtgui_time_sink_x_0_0, '0']
 - [blocks_complex_to_float_0, '1', qtgui_time_sink_x_0_0, '2']
 - [blocks_complex_to_mag_squared_0, '0', blocks_integrate_xx_0, '0']
@@ -1544,7 +1567,7 @@ connections:
 - [blocks_integrate_xx_0_0, '0', blocks_multiply_const_vxx_1_0_0_0, '0']
 - [blocks_moving_average_xx_0, '0', blocks_sub_xx_0, '1']
 - [blocks_multiply_const_vxx_1_0_0, '0', epy_block_0, '0']
-- [blocks_multiply_const_vxx_1_0_0_0, '0', epy_block_0, '1']
+- [blocks_multiply_const_vxx_1_0_0_0, '0', blocks_add_const_vxx_0_0_0, '0']
 - [blocks_repeat_0_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_repeat_0_0_0, '0', qtgui_time_sink_x_0, '1']
 - [blocks_repeat_0_0_1, '0', qtgui_time_sink_x_0, '2']

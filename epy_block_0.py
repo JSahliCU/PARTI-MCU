@@ -81,7 +81,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
                  max_input_level=0.9, min_input_level=0.1, update_period=0.5, delay_between_settings=0.1, auto_log_time_min=15,
                  ratio_of_freq_change_to_diff=0.9, freq_offset_limit=2e3,
                  callback_rf_gain=None, callback_if_gain=None, callback_bb_gain=None,
-                 symbol_delta_f = None,
+                 symbol_delta_f = None, demod_offset = None,
                  callback_set_freq=None, callback_get_freq_0=None,
                  callback_get_freq=None, callback_set_symbol_rate=None, callback_get_symbol_rate_0=None):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
@@ -111,6 +111,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         # if an attribute with the same name as a parameter is found,s
         self.ratio_of_freq_change_to_diff = ratio_of_freq_change_to_diff
         self.freq_offset_limit = freq_offset_limit
+        self.demod_offset = demod_offset
         self.symbol_delta_f = symbol_delta_f
         # a callback is registered (properties work, too).
         self.callback_set_freq = callback_set_freq
@@ -132,9 +133,10 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
                 rf_gain = gain_table_tuple[0]
                 if_gain = gain_table_tuple[1]
                 bb_gain = gain_table_tuple[2]
+                freq = self.callback_get_freq()
                 log_msg = ','.join(
                     map(str, 
-                        [input_items[0][-1], rf_gain, if_gain, bb_gain]
+                        [input_items[0][-1], rf_gain, if_gain, bb_gain, freq]
                     )
                 )
                 print(str(datetime.datetime.now()) + "UTC " + log_msg, file=f)
@@ -155,12 +157,14 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         
         time.sleep(self.delay_between_settings)
         
-        #self.update_frequency_setting(input_items)
+        self.update_frequency_setting(input_items)
         
         time.sleep(self.update_period - self.delay_between_settings)
         return 0 #len(output_items[0])
 
     def update_frequency_setting(self, input_items):
+        #input_freq_data = input_items[1][-1] - self.demod_offset
+        
         # calculate how much we should adjust the frequency
         diff_in_abs_f = (np.abs(input_items[1][-1]) * self.symbol_delta_f)
         # apply the damping term
@@ -180,9 +184,9 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.callback_set_freq(freq)
 
         # update the symbol rate
-        absolute_symbol_rate = self.callback_get_symbol_rate_0()
-        symbol_rate_update = self.callback_get_symbol_rate_0() * (freq / freq_0)
-        self.callback_set_symbol_rate(symbol_rate_update)
+        #absolute_symbol_rate = self.callback_get_symbol_rate_0()
+        #symbol_rate_update = self.callback_get_symbol_rate_0() * (freq / freq_0)
+        #self.callback_set_symbol_rate(symbol_rate_update)
 
     def check_gain_table_index_limits(self):
         if self.gain_table_index < 0:
