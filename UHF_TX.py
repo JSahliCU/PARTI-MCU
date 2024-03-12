@@ -74,13 +74,13 @@ class UHF_TX(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.bps = bps = 1e3
+        self.bps = bps = 1000
+        self.M = M = 2
         self.samp_rate = samp_rate = (int) (2e6)
         self.packet_bits = packet_bits = 108
         self.header_bits = header_bits = 8
         self.delta_f = delta_f = 1.1 * bps
-        self.baud_rate = baud_rate = 1000
-        self.M = M = 2
+        self.baud_rate = baud_rate = bps * 2 / M
         self.samp_per_symbol = samp_per_symbol = (int)(samp_rate * (1 / baud_rate))
         self.samp_per_bit = samp_per_bit = (int)(samp_rate * (1 / bps))
         self.rf_gain = rf_gain = 14
@@ -100,31 +100,6 @@ class UHF_TX(gr.top_block, Qt.QWidget):
         self._if_gain_range = Range(0, 28, 1, 28, 200)
         self._if_gain_win = RangeWidget(self._if_gain_range, self.set_if_gain, 'if_gain', "counter_slider", float)
         self.top_grid_layout.addWidget(self._if_gain_win)
-        # Create the options list
-        self._baud_rate_options = (1000, 10000, 100000, )
-        # Create the labels list
-        self._baud_rate_labels = ('1 kbps', '10 kbps', '100 kbps', )
-        # Create the combo box
-        # Create the radio buttons
-        self._baud_rate_group_box = Qt.QGroupBox('Symbol Rate' + ": ")
-        self._baud_rate_box = Qt.QHBoxLayout()
-        class variable_chooser_button_group(Qt.QButtonGroup):
-            def __init__(self, parent=None):
-                Qt.QButtonGroup.__init__(self, parent)
-            @pyqtSlot(int)
-            def updateButtonChecked(self, button_id):
-                self.button(button_id).setChecked(True)
-        self._baud_rate_button_group = variable_chooser_button_group()
-        self._baud_rate_group_box.setLayout(self._baud_rate_box)
-        for i, _label in enumerate(self._baud_rate_labels):
-            radio_button = Qt.QRadioButton(_label)
-            self._baud_rate_box.addWidget(radio_button)
-            self._baud_rate_button_group.addButton(radio_button, i)
-        self._baud_rate_callback = lambda i: Qt.QMetaObject.invokeMethod(self._baud_rate_button_group, "updateButtonChecked", Qt.Q_ARG("int", self._baud_rate_options.index(i)))
-        self._baud_rate_callback(self.baud_rate)
-        self._baud_rate_button_group.buttonClicked[int].connect(
-            lambda i: self.set_baud_rate(self._baud_rate_options[i]))
-        self.top_grid_layout.addWidget(self._baud_rate_group_box)
         self.osmosdr_sink_0 = osmosdr.sink(
             args="numchan=" + str(1) + " " + "hackrf=0"
         )
@@ -137,6 +112,31 @@ class UHF_TX(gr.top_block, Qt.QWidget):
         self.osmosdr_sink_0.set_bb_gain(bb_gain, 0)
         self.osmosdr_sink_0.set_antenna('', 0)
         self.osmosdr_sink_0.set_bandwidth(demod_offset*2 + delta_f * 10, 0)
+        # Create the options list
+        self._bps_options = (1000, 5000, 10000, )
+        # Create the labels list
+        self._bps_labels = ('1 kbps', '5 kbps', '10 kbps', )
+        # Create the combo box
+        # Create the radio buttons
+        self._bps_group_box = Qt.QGroupBox('Symbol Rate' + ": ")
+        self._bps_box = Qt.QHBoxLayout()
+        class variable_chooser_button_group(Qt.QButtonGroup):
+            def __init__(self, parent=None):
+                Qt.QButtonGroup.__init__(self, parent)
+            @pyqtSlot(int)
+            def updateButtonChecked(self, button_id):
+                self.button(button_id).setChecked(True)
+        self._bps_button_group = variable_chooser_button_group()
+        self._bps_group_box.setLayout(self._bps_box)
+        for i, _label in enumerate(self._bps_labels):
+            radio_button = Qt.QRadioButton(_label)
+            self._bps_box.addWidget(radio_button)
+            self._bps_button_group.addButton(radio_button, i)
+        self._bps_callback = lambda i: Qt.QMetaObject.invokeMethod(self._bps_button_group, "updateButtonChecked", Qt.Q_ARG("int", self._bps_options.index(i)))
+        self._bps_callback(self.bps)
+        self._bps_button_group.buttonClicked[int].connect(
+            lambda i: self.set_bps(self._bps_options[i]))
+        self.top_grid_layout.addWidget(self._bps_group_box)
         self.blocks_vco_c_0_0 = blocks.vco_c(samp_rate, (delta_f) * 2 * 3.14159, 1)
         self.blocks_uchar_to_float_1 = blocks.uchar_to_float()
         self.blocks_repeat_0_0 = blocks.repeat(gr.sizeof_char*1, (int)(samp_rate * (1 / baud_rate)))
@@ -168,8 +168,18 @@ class UHF_TX(gr.top_block, Qt.QWidget):
 
     def set_bps(self, bps):
         self.bps = bps
+        self.set_baud_rate(self.bps * 2 / self.M)
+        self._bps_callback(self.bps)
         self.set_delta_f(1.1 * self.bps)
         self.set_samp_per_bit((int)(self.samp_rate * (1 / self.bps)))
+
+    def get_M(self):
+        return self.M
+
+    def set_M(self, M):
+        self.M = M
+        self.set_bandwidth(self.M * self.delta_f)
+        self.set_baud_rate(self.bps * 2 / self.M)
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -209,16 +219,8 @@ class UHF_TX(gr.top_block, Qt.QWidget):
 
     def set_baud_rate(self, baud_rate):
         self.baud_rate = baud_rate
-        self._baud_rate_callback(self.baud_rate)
         self.set_samp_per_symbol((int)(self.samp_rate * (1 / self.baud_rate)))
         self.blocks_repeat_0_0.set_interpolation((int)(self.samp_rate * (1 / self.baud_rate)))
-
-    def get_M(self):
-        return self.M
-
-    def set_M(self, M):
-        self.M = M
-        self.set_bandwidth(self.M * self.delta_f)
 
     def get_samp_per_symbol(self):
         return self.samp_per_symbol
