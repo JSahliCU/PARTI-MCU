@@ -281,7 +281,7 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self._freq_display_label = Qt.QLabel(str(self._freq_display_formatter(self.freq_display)))
         self._freq_display_tool_bar.addWidget(self._freq_display_label)
         self.top_grid_layout.addWidget(self._freq_display_tool_bar)
-        self.epy_block_0 = epy_block_0.blk(max_input_level=0.8, min_input_level=0.1, update_period=0.5, delay_between_settings=0.25, auto_log_time_min=15, ratio_of_freq_change_to_diff=0.1, freq_offset_limit=15e3, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain, symbol_delta_f=delta_f, demod_offset=demod_offset, callback_set_freq=self.set_freq, callback_get_freq_0=self.get_freq_0, callback_get_freq=self.get_freq, callback_set_symbol_rate=self.set_baud_rate, callback_get_symbol_rate_0=self.get_baud_rate_0)
+        self.epy_block_0 = epy_block_0.blk(max_input_level=0.75, min_input_level=0.1, update_period=0.5, delay_between_settings=0.25, auto_log_time_min=15, ratio_of_freq_change_to_diff=0.1, freq_offset_limit=15e3, callback_rf_gain=self.set_rf_gain, callback_if_gain=self.set_if_gain, callback_bb_gain=self.set_bb_gain, symbol_delta_f=delta_f, demod_offset=demod_offset, callback_set_freq=self.set_freq, callback_get_freq_0=self.get_freq_0, callback_get_freq=self.get_freq, callback_set_symbol_rate=self.set_baud_rate, callback_get_symbol_rate_0=self.get_baud_rate_0)
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_ff(
             digital.TED_SIGNAL_TIMES_SLOPE_ML,
             samp_per_symbol,
@@ -355,8 +355,8 @@ class UHF_RX(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_float_to_uchar_0, 0))
         self.connect((self.blocks_add_const_vxx_0_0, 0), (self.blocks_repeat_0_0, 0))
         self.connect((self.blocks_add_const_vxx_0_0_0, 0), (self.epy_block_0, 1))
-        self.connect((self.blocks_complex_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_complex_to_float_0, 1), (self.qtgui_time_sink_x_0_0, 2))
+        self.connect((self.blocks_complex_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_integrate_xx_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_uchar_to_float_0, 0))
         self.connect((self.blocks_float_to_uchar_0, 0), (self.blocks_unpacked_to_packed_xx_0, 0))

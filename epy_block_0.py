@@ -157,12 +157,12 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         
         time.sleep(self.delay_between_settings)
         
-        self.update_frequency_setting(input_items)
+        self.update_frequency_setting(input_items, log)
         
         time.sleep(self.update_period - self.delay_between_settings)
         return 0 #len(output_items[0])
 
-    def update_frequency_setting(self, input_items):
+    def update_frequency_setting(self, input_items, log):
         #input_freq_data = input_items[1][-1] - self.demod_offset
         
         # calculate how much we should adjust the frequency
@@ -171,17 +171,19 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         freq_change_to_do = diff_in_abs_f * self.ratio_of_freq_change_to_diff
         
         # calculate which way to move the frequency (inc or dec)
-        sign = np.sign(input_items[1][-1])
-        freq = self.callback_get_freq()
-        freq += sign * freq_change_to_do
-        
-        # if the proposed change goes past the freq_offset_limit, then set the change to the freq_offset_limit
-        freq_0 = self.callback_get_freq_0()
-        if np.abs(freq - freq_0) > self.freq_offset_limit:
-            freq = self.callback_get_freq_0 + sign * self.freq_offset_limit
-        
-        # update the hackrf freq
-        self.callback_set_freq(freq)
+        if freq_change_to_do > 1.5e3 * self.ratio_of_freq_change_to_diff:
+            log()
+            sign = np.sign(input_items[1][-1])
+            freq = self.callback_get_freq()
+            freq += sign * freq_change_to_do
+            
+            # if the proposed change goes past the freq_offset_limit, then set the change to the freq_offset_limit
+            freq_0 = self.callback_get_freq_0()
+            if np.abs(freq - freq_0) > self.freq_offset_limit:
+                freq = self.callback_get_freq_0 + sign * self.freq_offset_limit
+            
+            # update the hackrf freq
+            self.callback_set_freq(freq)
 
         # update the symbol rate
         #absolute_symbol_rate = self.callback_get_symbol_rate_0()
