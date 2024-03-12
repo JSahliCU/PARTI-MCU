@@ -29,4 +29,4 @@
 */1 * * * * ~/runmag/rm3100-runMag/runMag -m -s -q | tail -n 1 >> rm3100.csv
 */1 * * * * python ~/adxl34x_daemon.py
 */1 * * * * python ~/mcp3422_daemon.py
-*/1 * * * * ~/heartbeat_check.sh
+#*/1 * * * * ~/heartbeat_check.sh
